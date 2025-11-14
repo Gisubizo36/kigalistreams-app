@@ -1135,7 +1135,7 @@ const HomeView = ({
         <div className="relative z-10 container mx-auto pt-8 lg:hidden">
           {/* Container for the stacked cards */}
           <div
-            className={`relative w-full h-80 flex items-center justify-center overflow-hidden transition-opacity duration-500 ease-in-out ${
+            className={`relative w-full h-80 flex items-end justify-center overflow-hidden transition-opacity duration-500 ease-in-out ${ // <-- ALIGN TO BOTTOM
               isFading ? "opacity-0" : "opacity-100"
             }`}
           >
@@ -1143,55 +1143,72 @@ const HomeView = ({
               heroItemsForStack.map((item, index) => {
                 let itemClass = "";
                 let cornerClass = "rounded-xl";
-                let glowClass = ""; // <-- NEW GLOW CLASS
+                let glowClass = "";
+                let heightClass = "";
 
                 if (index === 0) {
-                  // Left Card (Taller, more visible)
-                  itemClass =
-                    "absolute z-10 opacity-100 scale-85 -translate-x-[60%]"; // <-- 85% height, 60% out
-                  glowClass = "shadow-xl shadow-pink-500/40"; // <-- Pink glow
+                  // Left Card
+                  itemClass = "z-10 -mr-28"; // <-- Pull center card over it
+                  heightClass = "h-5/6"; // <-- Shorter height
+                  glowClass = "shadow-xl shadow-pink-500/30";
                 } else if (index === 1) {
-                  // Center Card (Taller)
-                  itemClass = "absolute z-20 opacity-100 scale-100";
+                  // Center Card
+                  itemClass = "z-20";
+                  heightClass = "h-full"; // <-- Full height (taller)
                   cornerClass = "rounded-2xl";
-                  glowClass = "shadow-2xl shadow-amber-500/50"; // <-- Main glow
+                  glowClass = "shadow-2xl shadow-amber-500/40";
                 } else {
-                  // Right Card (Taller, more visible)
-                  itemClass =
-                    "absolute z-10 opacity-100 scale-85 translate-x-[60%]"; // <-- 85% height, 60% out
-                  glowClass = "shadow-xl shadow-blue-500/40"; // <-- Blue glow
+                  // Right Card
+                  itemClass = "z-10 -ml-28"; // <-- Pull center card over it
+                  heightClass = "h-5/6"; // <-- Shorter height
+                  glowClass = "shadow-xl shadow-blue-500/30";
                 }
 
                 return (
                   <div
                     key={`${item.id}-${index}-${currentCardIndex}`}
-                    className={`w-1/2 aspect-[2/3] transition-all duration-700 ease-in-out ${itemClass}`} // <-- w-1/2 (50%) base width
+                    className={`w-1/2 aspect-[2/3] transition-all duration-700 ease-in-out ${itemClass} ${heightClass}`} // <-- Base width w-1/2
                     onClick={() => navigate("detail", item.id)} // Click on whole card
                   >
-                    <img
-                      src={
-                        item.thumbnail ||
-                        `https://placehold.co/400x600/1f2937/fff?text=${encodeURIComponent(
-                          item.title
-                        )}`
-                      }
-                      alt={item.title}
-                      className={`w-full h-full object-cover ${cornerClass} ${glowClass}`} // <-- Added glow
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = `https://placehold.co/400x600/1f2937/fff?text=${encodeURIComponent(
-                          item.title
-                        )}`;
-                      }}
-                    />
-
-                    {/* The Play Button and Dimming Overlay are REMOVED */}
+                    <div className="relative w-full h-full">
+                      {" "}
+                      {/* Wrapper for image + play button */}
+                      <img
+                        src={
+                          item.thumbnail ||
+                          `https://placehold.co/400x600/1f2937/fff?text=${encodeURIComponent(
+                            item.title
+                          )}`
+                        }
+                        alt={item.title}
+                        className={`w-full h-full object-cover ${cornerClass} ${glowClass}`} // <-- Added glow
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = `https://placehold.co/400x600/1f2937/fff?text=${encodeURIComponent(
+                            item.title
+                          )}`;
+                        }}
+                      />
+                      {/* --- PLAY BUTTON (like the sample) --- */}
+                      <div
+                        className="absolute inset-0 flex items-center justify-center"
+                        style={{ pointerEvents: "none" }}
+                      >
+                        <div className="bg-black/50 rounded-full p-3">
+                          <Play
+                            size={32}
+                            className="text-white"
+                            fill="currentColor"
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 );
               })
             ) : (
               // Loading/Fallback state
-              <div className="flex items-center justify-center w-1/2 aspect-[2/3] bg-gray-700 rounded-xl">
+              <div className="flex items-center justify-center w-1/2 h-5/6 aspect-[2/3] bg-gray-700 rounded-xl">
                 <p className="text-gray-400">Loading...</p>
               </div>
             )}
@@ -1323,97 +1340,6 @@ const HomeView = ({
           &copy; {new Date().getFullYear()} KigaliStreams. All Rights
           Reserved.
         </footer>
-      </div>
-    </div>
-  );
-};
-const TranslatedFilmsView = ({
-  content,
-  navigate,
-  toggleWatchLater,
-  watchLater,
-  selectedTranslator,
-  setSelectedTranslator,
-  translators,
-  isLoadingTranslators,
-}) => {
-  const translatedContent = useMemo(() => {
-    let items = content
-      .filter((item) => item.translator)
-      .sort((a, b) => b.timestamp - a.timestamp);
-    if (selectedTranslator) {
-      items = items.filter((item) => item.translator === selectedTranslator);
-    }
-    return items;
-  }, [content, selectedTranslator]);
-
-  const title = selectedTranslator
-    ? `Films by ${selectedTranslator}`
-    : "All Translated Films";
-  const watchLaterIds = watchLater;
-
-  return (
-    <div className="relative w-full min-h-screen pt-24">
-      <div
-        className="absolute inset-0 z-0 performant-bg"
-        // (if the old div had marginTop, add it to the style prop like this)
-        style={{ marginTop: "-4rem" }}
-      ></div>
-      <div className="relative z-10 container mx-auto py-8 px-4 sm:px-6">
-        <h1 className="text-3xl font-bold text-white mb-4 flex items-center">
-          <BookOpen size={28} className={`mr-3 bg-amber-600`} /> {title}
-        </h1>
-        <div className="flex flex-wrap gap-3 mb-8 p-3 bg-gray-800 rounded-xl shadow-inner">
-          <span className="text-gray-300 font-semibold text-sm self-center pr-2">
-            Filter By:
-          </span>
-          <button
-            onClick={() => setSelectedTranslator(null)}
-            className={`text-sm font-medium py-2 px-4 rounded-full transition shadow-md ${
-              selectedTranslator === null
-                ? `bg-amber-600 text-white hover:bg-emerald-700`
-                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-            }`}
-          >
-            All Translators
-          </button>
-          {isLoadingTranslators ? (
-            <span className="text-gray-400 text-sm p-2">
-              Loading translators...
-            </span>
-          ) : (
-            translators.map((translator) => (
-              <button
-                key={translator}
-                onClick={() => setSelectedTranslator(translator)}
-                className={`text-sm font-medium py-2 px-4 rounded-full transition shadow-md ${
-                  selectedTranslator === translator
-                    ? `bg-amber-600 text-white hover:bg-emerald-700`
-                    : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                }`}
-              >
-                {translator}
-              </button>
-            ))
-          )}
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-          {translatedContent.length === 0 ? (
-            <p className="text-gray-400 col-span-full py-10 text-center">
-              No translated content available for this selection.
-            </p>
-          ) : (
-            translatedContent.map((item) => (
-              <Card
-                key={item.id}
-                item={item}
-                onClick={navigate}
-                onWatchLaterToggle={toggleWatchLater}
-                isWatchLater={watchLaterIds.includes(item.id)}
-              />
-            ))
-          )}
-        </div>
       </div>
     </div>
   );
