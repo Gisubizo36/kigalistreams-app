@@ -1142,26 +1142,30 @@ const HomeView = ({
             {heroItemsForStack.length > 0 ? (
               heroItemsForStack.map((item, index) => {
                 let itemClass = "";
-                let cornerClass = "rounded-xl"; // Default for side cards
+                let cornerClass = "rounded-xl";
+                let glowClass = ""; // <-- NEW GLOW CLASS
 
                 if (index === 0) {
-                  // Left Card (Smaller, tucked in)
+                  // Left Card (Taller, more visible)
                   itemClass =
-                    "absolute z-10 opacity-100 scale-75 -translate-x-[35%]";
+                    "absolute z-10 opacity-100 scale-85 -translate-x-[60%]"; // <-- 85% height, 60% out
+                  glowClass = "shadow-xl shadow-pink-500/40"; // <-- Pink glow
                 } else if (index === 1) {
                   // Center Card (Taller)
                   itemClass = "absolute z-20 opacity-100 scale-100";
-                  cornerClass = "rounded-2xl"; // Larger rounding for center
+                  cornerClass = "rounded-2xl";
+                  glowClass = "shadow-2xl shadow-amber-500/50"; // <-- Main glow
                 } else {
-                  // Right Card (Smaller, tucked in)
+                  // Right Card (Taller, more visible)
                   itemClass =
-                    "absolute z-10 opacity-100 scale-75 translate-x-[35%]";
+                    "absolute z-10 opacity-100 scale-85 translate-x-[60%]"; // <-- 85% height, 60% out
+                  glowClass = "shadow-xl shadow-blue-500/40"; // <-- Blue glow
                 }
 
                 return (
                   <div
                     key={`${item.id}-${index}-${currentCardIndex}`}
-                    className={`w-3/5 aspect-[2/3] transition-all duration-700 ease-in-out ${itemClass}`} // <-- w-3/5 is narrower
+                    className={`w-1/2 aspect-[2/3] transition-all duration-700 ease-in-out ${itemClass}`} // <-- w-1/2 (50%) base width
                     onClick={() => navigate("detail", item.id)} // Click on whole card
                   >
                     <img
@@ -1172,7 +1176,7 @@ const HomeView = ({
                         )}`
                       }
                       alt={item.title}
-                      className={`w-full h-full object-cover shadow-2xl ${cornerClass}`}
+                      className={`w-full h-full object-cover ${cornerClass} ${glowClass}`} // <-- Added glow
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = `https://placehold.co/400x600/1f2937/fff?text=${encodeURIComponent(
@@ -1180,14 +1184,14 @@ const HomeView = ({
                         )}`;
                       }}
                     />
-                    
+
                     {/* The Play Button and Dimming Overlay are REMOVED */}
                   </div>
                 );
               })
             ) : (
               // Loading/Fallback state
-              <div className="flex items-center justify-center w-3/5 aspect-[2/3] bg-gray-700 rounded-xl">
+              <div className="flex items-center justify-center w-1/2 aspect-[2/3] bg-gray-700 rounded-xl">
                 <p className="text-gray-400">Loading...</p>
               </div>
             )}
