@@ -1148,31 +1148,32 @@ const HomeView = ({
 
                 if (index === 0) {
                   // Left Card
-                  itemClass = "z-10 -mr-28"; // <-- Pull center card over it
-                  heightClass = "h-5/6"; // <-- Shorter height
-                  glowClass = "shadow-xl shadow-pink-500/30";
+                  itemClass = "z-10 -mr-28";
+                  heightClass = "h-5/6";
+                  glowClass =
+                    "border-2 border-pink-500/70 shadow-lg shadow-pink-500/20"; // <-- Edge glow
                 } else if (index === 1) {
                   // Center Card
                   itemClass = "z-20";
-                  heightClass = "h-full"; // <-- Full height (taller)
+                  heightClass = "h-full";
                   cornerClass = "rounded-2xl";
-                  glowClass = "shadow-2xl shadow-amber-500/40";
+                  glowClass =
+                    "border-2 border-amber-500/70 shadow-lg shadow-amber-500/20"; // <-- Edge glow
                 } else {
                   // Right Card
-                  itemClass = "z-10 -ml-28"; // <-- Pull center card over it
-                  heightClass = "h-5/6"; // <-- Shorter height
-                  glowClass = "shadow-xl shadow-blue-500/30";
+                  itemClass = "z-10 -ml-28";
+                  heightClass = "h-5/6";
+                  glowClass =
+                    "border-2 border-blue-500/70 shadow-lg shadow-blue-500/20"; // <-- Edge glow
                 }
 
                 return (
                   <div
                     key={`${item.id}-${index}-${currentCardIndex}`}
-                    className={`w-1/2 aspect-[2/3] transition-all duration-700 ease-in-out ${itemClass} ${heightClass}`} // <-- Base width w-1/2
+                    className={`w-1/2 aspect-[2/3] transition-all duration-700 ease-in-out ${itemClass} ${heightClass}`}
                     onClick={() => navigate("detail", item.id)} // Click on whole card
                   >
                     <div className="relative w-full h-full">
-                      {" "}
-                      {/* Wrapper for image + play button */}
                       <img
                         src={
                           item.thumbnail ||
@@ -1189,19 +1190,7 @@ const HomeView = ({
                           )}`;
                         }}
                       />
-                      {/* --- PLAY BUTTON (like the sample) --- */}
-                      <div
-                        className="absolute inset-0 flex items-center justify-center"
-                        style={{ pointerEvents: "none" }}
-                      >
-                        <div className="bg-black/50 rounded-full p-3">
-                          <Play
-                            size={32}
-                            className="text-white"
-                            fill="currentColor"
-                          />
-                        </div>
-                      </div>
+                      {/* --- PLAY BUTTON REMOVED --- */}
                     </div>
                   </div>
                 );
