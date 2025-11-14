@@ -1122,45 +1122,47 @@ const HomeView = ({
 
   return (
     <div className="min-h-screen pt-24 relative">
-           {" "}
       <div
         className="relative w-full h-auto lg:h-[500px] bg-cover bg-center -mt-16"
-        style={{ backgroundColor: "red" }}
+        style={{
+          backgroundImage:
+            "url(https://images.pexels.com/photos/109669/pexels-photo-109669.jpeg)",
+        }}
       >
-                <div className="absolute inset-0 bg-black/60"></div>       {" "}
-        {/* --- NEW MOBILE HERO STACK --- */}       {" "}
+        <div className="absolute inset-0 bg-black/60"></div>
+
+        {/* --- NEW MOBILE HERO STACK (UPDATED TO MATCH SAMPLE) --- */}
         <div className="relative z-10 container mx-auto pt-8 lg:hidden">
-                    {/* Container for the stacked cards */}         {" "}
+          {/* Container for the stacked cards */}
           <div
             className={`relative w-full h-80 flex items-center justify-center overflow-hidden transition-opacity duration-500 ease-in-out ${
               isFading ? "opacity-0" : "opacity-100"
             }`}
           >
-                       {" "}
             {heroItemsForStack.length > 0 ? (
               heroItemsForStack.map((item, index) => {
                 let itemClass = "";
                 let cornerClass = "rounded-xl"; // Default for side cards
 
                 if (index === 0) {
-                  // Left Card
+                  // Left Card (No opacity-60)
                   itemClass =
-                    "absolute z-10 opacity-60 scale-80 -translate-x-[30%]";
+                    "absolute z-10 opacity-100 scale-80 -translate-x-[30%]";
                 } else if (index === 1) {
                   // Center Card
                   itemClass = "absolute z-20 opacity-100 scale-100";
                   cornerClass = "rounded-2xl"; // Larger rounding for center
                 } else {
-                  // Right Card
+                  // Right Card (No opacity-60)
                   itemClass =
-                    "absolute z-10 opacity-60 scale-80 translate-x-[30%]";
+                    "absolute z-10 opacity-100 scale-80 translate-x-[30%]";
                 }
 
                 return (
                   <div
                     key={`${item.id}-${index}-${currentCardIndex}`}
                     className={`w-2/3 aspect-[2/3] transition-all duration-700 ease-in-out ${itemClass}`}
-                    onClick={() => navigate("detail", item.id)} // This is the click action you wanted
+                    onClick={() => navigate("detail", item.id)} // Click on whole card
                   >
                     <img
                       src={
@@ -1178,10 +1180,22 @@ const HomeView = ({
                         )}`;
                       }}
                     />
-                    {/* Overlay for "dim" effect, no play button */}
+
+                    {/* --- NEW PLAY BUTTON (like the sample) --- */}
                     <div
-                      className={`absolute inset-0 bg-black/30 ${cornerClass}`}
-                    ></div>
+                      className="absolute inset-0 flex items-center justify-center"
+                      style={{ pointerEvents: "none" }} // Makes sure the click goes to the card
+                    >
+                      <div className="bg-black/50 rounded-full p-3">
+                        <Play
+                          size={32}
+                          className="text-white"
+                          fill="currentColor"
+                        />
+                      </div>
+                    </div>
+
+                    {/* The bg-black/30 overlay is now REMOVED */}
                   </div>
                 );
               })
@@ -1191,30 +1205,24 @@ const HomeView = ({
                 <p className="text-gray-400">Loading...</p>
               </div>
             )}
-                     {" "}
           </div>
-                 {" "}
         </div>
-                {/* --- END NEW MOBILE HERO STACK --- */}       {" "}
+        {/* --- END NEW MOBILE HERO STACK (UPDATED) --- */}
+
         <div className="relative z-10 container mx-auto px-4 sm:px-6 pb-12 lg:pb-0 lg:h-full lg:flex lg:items-center">
-                   {" "}
           <div className="flex-1 max-w-lg text-center lg:text-left pt-4 lg:pt-0">
-                       {" "}
             <h1
               className="text-4xl md:text-5xl font-extrabold text-white leading-tight mb-4"
               style={{ textShadow: "2px 2px 8px rgba(0,0,0,0.7)" }}
             >
-                            Unlimited Movies, TV Shows, and More.            {" "}
+              Unlimited Movies, TV Shows, and More.
             </h1>
-                       {" "}
             <p className="text-lg md:text-xl text-gray-200">
-                            Watch anywhere. Translated for you.            {" "}
+              Watch anywhere. Translated for you.
             </p>
-                     {" "}
           </div>
-                    {/* --- DESKTOP HERO (FIXED) --- */}         {" "}
+          {/* --- DESKTOP HERO (FIXED) --- */}
           <div className="hidden lg:block flex-1 relative h-full">
-                       {" "}
             <div
               className="absolute -right-32 top-1/2 -translate-y-1/2 w-[740px] h-[380px] overflow-hidden"
               style={{
@@ -1222,10 +1230,8 @@ const HomeView = ({
                   "linear-gradient(to right, transparent, black 20%, black 80%, transparent 100%)",
               }}
             >
-                           {" "}
               <div className="absolute left-0 top-0 flex animate-scroll h-full py-4 items-center">
-                                {/* THIS NOW USES "heroItems" AS INTENDED */}   
-                           {" "}
+                {/* THIS NOW USES "heroItems" AS INTENDED */}
                 {heroItems.length > 0
                   ? heroItems.map((item, index) => (
                       <div
@@ -1233,7 +1239,6 @@ const HomeView = ({
                         className="w-[200px] aspect-[2/3] mx-3 flex-shrink-0 transition-transform duration-500 hover:scale-110 cursor-pointer"
                         onClick={() => navigate("detail", item.id)}
                       >
-                                               {" "}
                         <img
                           src={
                             item.thumbnail ||
@@ -1244,7 +1249,6 @@ const HomeView = ({
                           alt={item.title}
                           className="w-full h-full object-cover rounded-lg shadow-2xl"
                         />
-                                             {" "}
                       </div>
                     ))
                   : [1, 2, 3, 4, 5, 6].map((i) => (
@@ -1253,22 +1257,16 @@ const HomeView = ({
                         className="w-[200px] aspect-[2/3] mx-3 flex-shrink-0 bg-gray-700 rounded-lg"
                       ></div>
                     ))}
-                             {" "}
               </div>
-                       {" "}
             </div>
-                     {" "}
           </div>
-                    {/* --- END DESKTOP HERO --- */}       {" "}
+          {/* --- END DESKTOP HERO --- */}
         </div>
-             {" "}
       </div>
-            <AdBanner />     {" "}
+      <AdBanner />
       <div className="relative w-full overflow-hidden">
-                <div className="absolute inset-0 z-0 performant-bg"></div>     
-         {" "}
+        <div className="absolute inset-0 z-0 performant-bg"></div>
         <main className="container mx-auto py-8 relative z-20 pb-8">
-                   {" "}
           {continueWatchingItems.length > 0 && (
             <Section
               title="Continue Watching"
@@ -1278,8 +1276,7 @@ const HomeView = ({
               watchLaterIds={watchLaterIds}
             />
           )}
-                               {/* --- "Trending Now" is now first --- */}     
-             {" "}
+          {/* --- "Trending Now" is now first --- */}
           <Section
             title="Trending Now"
             items={trendingItems}
@@ -1288,7 +1285,7 @@ const HomeView = ({
             watchLaterIds={watchLaterIds}
             viewAllPath="allcontent"
           />
-                    {/* --- "Recently Added" is second --- */}         {" "}
+          {/* --- "Recently Added" is second --- */}
           <Section
             title="Recently Added"
             items={recentlyAddedItems}
@@ -1297,7 +1294,7 @@ const HomeView = ({
             watchLaterIds={watchLaterIds}
             viewAllPath="allcontent"
           />
-                    {/* --- ALL OTHER SECTIONS STAY HERE --- */}         {" "}
+          {/* --- ALL OTHER SECTIONS STAY HERE --- */}
           <Section
             title="Top Rated"
             items={topRatedItems}
@@ -1306,7 +1303,6 @@ const HomeView = ({
             watchLaterIds={watchLaterIds}
             viewAllPath="allcontent"
           />
-                   {" "}
           <Section
             title="Movies"
             items={moviesItems}
@@ -1315,7 +1311,6 @@ const HomeView = ({
             watchLaterIds={watchLaterIds}
             viewAllPath="allcontent"
           />
-                   {" "}
           <Section
             title="TV Series"
             items={seriesItems}
@@ -1324,7 +1319,6 @@ const HomeView = ({
             watchLaterIds={watchLaterIds}
             viewAllPath="allcontent"
           />
-                   {" "}
           <Section
             title="Anime"
             items={animeItems}
@@ -1333,109 +1327,12 @@ const HomeView = ({
             watchLaterIds={watchLaterIds}
             viewAllPath="allcontent"
           />
-                 {" "}
         </main>
-               {" "}
         {/* This is the correct footer with the padding to stay above the ad */}
-               {" "}
         <footer className="container mx-auto relative z-20 w-full text-center pt-2 mt-2 border-t border-gray-700/30 text-xs text-gray-400 pb-24">
-                  &copy; {new Date().getFullYear()} KigaliStreams. All Rights
-          Reserved.        {" "}
+          &copy; {new Date().getFullYear()} KigaliStreams. All Rights
+          Reserved.
         </footer>
-             {" "}
-      </div>
-         {" "}
-    </div>
-  );
-};
-
-const WatchLaterView = ({
-  content,
-  watchLater,
-  navigate,
-  toggleWatchLater,
-}) => {
-  const watchLaterItems = useMemo(() => {
-    const watchLaterSet = new Set(watchLater);
-    return content
-      .filter((item) => watchLaterSet.has(item.id))
-      .sort((a, b) => b.timestamp - a.timestamp);
-  }, [content, watchLater]);
-
-  return (
-    <div className="relative w-full min-h-screen pt-24">
-      <div
-        className="absolute inset-0 z-0 performant-bg"
-        // (if the old div had marginTop, add it to the style prop like this)
-        style={{ marginTop: "-4rem" }}
-      ></div>
-      <div
-        className="absolute inset-0 z-0 performant-bg"
-        // (if the old div had marginTop, add it to the style prop like this)
-        style={{ marginTop: "-4rem" }}
-      ></div>
-      <div className="relative z-10 container mx-auto py-8 px-4 sm:px-6">
-        <h1 className="text-3xl font-bold text-white mb-8 flex items-center">
-          <Clock size={28} className={`mr-3 bg-amber-600`} /> Your Watch Later
-          List
-        </h1>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-          {watchLaterItems.length === 0 ? (
-            <p className="text-gray-400 col-span-full py-10 text-center">
-              Your Watch Later list is empty.
-            </p>
-          ) : (
-            watchLaterItems.map((item) => (
-              <Card
-                key={item.id}
-                item={item}
-                onClick={navigate}
-                onWatchLaterToggle={toggleWatchLater}
-                isWatchLater={true}
-              />
-            ))
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-const AllContentView = ({
-  content,
-  watchLater,
-  navigate,
-  toggleWatchLater,
-}) => {
-  // Sort all content by most recently added
-  const allItems = useMemo(() => {
-    return [...content].sort((a, b) => b.timestamp - a.timestamp);
-  }, [content]);
-
-  const watchLaterIds = watchLater; // Need this for the cards
-
-  return (
-    <div className="relative w-full min-h-screen pt-24">
-      <div
-        className="absolute inset-0 z-0 performant-bg"
-        // (if the old div had marginTop, add it to the style prop like this)
-        style={{ marginTop: "-4rem" }}
-      ></div>
-      <div className="relative z-10 container mx-auto py-8 px-4 sm:px-6">
-        <h1 className="text-3xl font-bold text-white mb-8 flex items-center">
-          <Globe size={28} className={`mr-3 bg-amber-600`} /> All Movies & TV
-          Series
-        </h1>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-          {allItems.map((item) => (
-            <Card
-              key={item.id}
-              item={item}
-              onClick={navigate}
-              onWatchLaterToggle={toggleWatchLater}
-              isWatchLater={watchLaterIds.includes(item.id)}
-            />
-          ))}
-        </div>
       </div>
     </div>
   );
