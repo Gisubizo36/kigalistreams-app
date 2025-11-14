@@ -164,6 +164,7 @@ const getInitialView = () => {
     "search",
     "genre",
     "allcontent",
+    "request",
   ]);
   const viewPart = hash.split("/")[0];
   if (validViews.has(viewPart)) {
@@ -536,7 +537,7 @@ const Card = (
   { item, onClick, onWatchLaterToggle, isWatchLater } // 1. Added props back
 ) => (
   <div
-    className="relative group rounded-lg border border-gray-700/50 overflow-hidden transform transition duration-300 hover:scale-[1.03] cursor-pointer"
+  className="relative group rounded-lg border border-gray-700/50 overflow-hidden transform transition duration-300 hover:scale-[1.03] cursor-pointer hover:shadow-lg hover:shadow-amber-500/30 hover:border-amber-500/50"
     style={{ viewTransitionName: `card-${item.id}` }}
     onClick={() => onClick("detail", item.id)} // Click on whole card
   >
@@ -596,6 +597,8 @@ const Card = (
     </div>
   </div>
 );
+// --- START: REPLACE YOUR ENTIRE SECTION COMPONENT WITH THIS ---
+
 const Section = ({
   title,
   items,
@@ -603,8 +606,9 @@ const Section = ({
   onWatchLaterToggle,
   watchLaterIds,
   viewAllPath = null, // This will be "allcontent"
+  isLoading = false, // <-- Prop is included
 }) => {
-  // --- 1. ADDED SCROLL LOGIC BACK ---
+  // --- 1. SCROLL LOGIC ---
   const scrollContainerRef = useRef(null);
 
   const handleScroll = (direction) => {
@@ -629,7 +633,7 @@ const Section = ({
 
   return (
     <section className="mb-8">
-      {/* --- 2. HEADER WITH ARROWS (NO "View more" button) --- */}
+      {/* --- 2. HEADER WITH ARROWS --- */}
       <div className="flex justify-between items-center mb-4 px-4 sm:px-6">
         <h2 className="text-2xl font-bold text-gray-100">{title}</h2>
 
@@ -656,11 +660,17 @@ const Section = ({
         ref={scrollContainerRef}
         className="flex overflow-x-auto pb-4 px-4 sm:px-6 space-x-4 custom-scrollbar"
       >
-        {items.length === 0 ? (
+        {/* --- START: CORRECTED LOGIC BLOCK --- */}
+        {isLoading ? (
+          // 1. Show 6 placeholders while loading
+          [...Array(6)].map((_, index) => <CardPlaceholder key={index} />)
+        ) : items.length === 0 ? (
+          // 2. Show "No content" message if not loading and no items
           <p className="text-gray-400">
             No content available in this section yet.
           </p>
         ) : (
+          // 3. Show the actual content cards
           items.map((item) => (
             <div
               key={item.id}
@@ -705,6 +715,7 @@ const Section = ({
             </div>
           ))
         )}
+        {/* --- END: CORRECTED LOGIC BLOCK --- */}
 
         {/* --- 4. "VIEW ALL" BUTTON AT THE END OF THE LIST --- */}
         {viewAllPath && items.length > 0 && (
@@ -722,6 +733,8 @@ const Section = ({
     </section>
   );
 };
+
+// --- END: REPLACE YOUR ENTIRE SECTION COMPONENT WITH THIS ---
 const VideoPlayer = ({
   url,
   title,
@@ -1003,6 +1016,25 @@ const AdBanner = () => {
 };
 
 // --- END: NEW AD COMPONENT ---
+// --- START: NEW SKELETON COMPONENT ---
+// Paste this code after your AdBanner component (around line 1030)
+
+const CardPlaceholder = () => (
+  <div className="min-w-[150px] w-[150px] sm:min-w-[180px] sm:w-[180px] animate-pulse">
+    <div className="relative aspect-[2/3] bg-gray-700 rounded-lg">
+      {/* Skeleton for Portrait Card */}
+    </div>
+    <div className="mt-3 space-y-2">
+      <div className="h-4 bg-gray-700 rounded w-3/4"></div>
+      <div className="h-3 bg-gray-700 rounded w-1/2"></div>
+      <div className="flex justify-between items-center pt-1">
+        <div className="h-3 bg-gray-700 rounded w-1/3"></div>
+        <div className="h-4 bg-gray-700 rounded w-1/4"></div>
+      </div>
+    </div>
+  </div>
+);
+// --- END: NEW SKELETON COMPONENT ---
 const HomeView = ({
   content,
   continueWatching,
@@ -1307,7 +1339,8 @@ const HomeView = ({
             onWatchLaterToggle={toggleWatchLater}
             watchLaterIds={watchLaterIds}
             viewAllPath="allcontent"
-          />
+            isLoading={isContentLoading}
+         />
           {/* --- "Recently Added" is second --- */}
           <Section
             title="Recently Added"
@@ -1316,6 +1349,7 @@ const HomeView = ({
             onWatchLaterToggle={toggleWatchLater}
             watchLaterIds={watchLaterIds}
             viewAllPath="allcontent"
+            isLoading={isContentLoading}
           />
           {/* --- ALL OTHER SECTIONS STAY HERE --- */}
           <Section
@@ -1325,6 +1359,7 @@ const HomeView = ({
             onWatchLaterToggle={toggleWatchLater}
             watchLaterIds={watchLaterIds}
             viewAllPath="allcontent"
+            isLoading={isContentLoading}
           />
           <Section
             title="Movies"
@@ -1333,6 +1368,7 @@ const HomeView = ({
             onWatchLaterToggle={toggleWatchLater}
             watchLaterIds={watchLaterIds}
             viewAllPath="allcontent"
+            isLoading={isContentLoading}
           />
           <Section
             title="TV Series"
@@ -1341,6 +1377,7 @@ const HomeView = ({
             onWatchLaterToggle={toggleWatchLater}
             watchLaterIds={watchLaterIds}
             viewAllPath="allcontent"
+            isLoading={isContentLoading}
           />
           <Section
             title="Anime"
@@ -1349,6 +1386,7 @@ const HomeView = ({
             onWatchLaterToggle={toggleWatchLater}
             watchLaterIds={watchLaterIds}
             viewAllPath="allcontent"
+            isLoading={isContentLoading}
           />
         </main>
         {/* This is the correct footer with the padding to stay above the ad */}
@@ -1563,11 +1601,15 @@ const DetailView = ({
                 className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm transition-all duration-300 hover:bg-black/50"
                 aria-label="Play Trailer"
               >
-                <Play
-                  size={80}
-                  className="text-white drop-shadow-lg transition-transform duration-300 hover:scale-110"
-                  fill="currentColor"
-                />
+              {/* --- START: YOUTUBE-STYLE BUTTON --- */}
+              <div className="w-20 h-14 bg-red-600/90 rounded-xl flex items-center justify-center shadow-lg transition-all duration-300 hover:bg-red-700 hover:scale-110 group">
+                  <Play
+                    size={40}
+                    className="text-white transition-transform group-hover:scale-105"
+                    fill="currentColor"
+                  />
+                </div>
+                {/* --- END: YOUTUBE-STYLE BUTTON --- */}
               </button>
             )}
           </div>
@@ -1798,6 +1840,47 @@ const ContactView = ({ navigate }) => (
     </div>
   </div>
 );
+// --- START: NEW REQUEST VIEW ---
+// Paste this after the ContactView component (around line 1610)
+
+const RequestView = ({ navigate }) => (
+  <div className="relative w-full min-h-screen pt-16 flex items-center justify-center">
+    <div
+      className="absolute inset-0 z-0 performant-bg"
+      style={{ marginTop: "-4rem" }}
+    ></div>
+    <div className="relative z-10 container mx-auto py-8 px-4 sm:px-6 max-w-lg">
+      <div className="bg-gray-800 p-8 rounded-xl shadow-2xl">
+        <h1 className="text-3xl font-bold text-white mb-6 text-center">
+          Request a Movie or TV Show
+        </h1>
+        <p className="text-gray-400 mb-8 text-center">
+          Is there something you want to watch that's not on KigaliStreams? Let
+          us know! The best way to send a request is via WhatsApp or Email.
+        </p>
+        <div className="space-y-6">
+          <a
+            href="https://wa.me/250787852414"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center bg-green-600 hover:bg-green-700 text-white font-semibold py-4 rounded-xl transition shadow-lg shadow-green-600/30"
+          >
+            <MessageSquare size={24} className="mr-3" />
+            Send Request via WhatsApp
+          </a>
+          <a
+            href="mailto:kigalistream.s@gmai.com?subject=Movie/TV Show Request"
+            className={`flex items-center justify-center bg-amber-600 hover:bg-emerald-700 text-white font-semibold py-4 rounded-xl transition shadow-lg shadow-emerald-600/30`}
+          >
+            <Mail size={24} className="mr-3" />
+            Send Request via Email
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+// --- END: NEW REQUEST VIEW ---
 
 const LoginView = ({ navigate }) => {
   const [isLoginMode, setIsLoginMode] = useState(true);
@@ -3752,6 +3835,9 @@ export default function App() {
       );
     }
     if (view === "contact") return <ContactView navigate={navigate} />;
+    if (view === "request") {
+      return <RequestView navigate={navigate} />;
+    }
     if (view === "admin") {
       if (isAdmin) {
         return (
@@ -4025,7 +4111,7 @@ export default function App() {
       `}</style>
       <header
         ref={headerRef} // <-- ADD THIS
-        className={`fixed top-0 left-0 right-0 z-50 shadow-lg transition-colors duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-100 shadow-lg transition-colors duration-300 ${
           // ALL THIS LOGIC IS REMOVED and handled by CSS now
           theme === "dark" ? "bg-gray-800" : "bg-white"
         }`}
@@ -4094,6 +4180,21 @@ export default function App() {
             >
               <BookOpen size={20} className="inline mr-1" /> Translated
             </button>
+            {/* --- NEW REQUEST BUTTON --- */}
+            <button
+              onClick={() => navigate("request")}
+              className={`hidden md:block p-2 rounded-lg transition-colors ${
+                view === "request"
+                  ? `bg-amber-600`
+                  : theme === "dark"
+                  ? "hover:bg-gray-700"
+                  : "hover:bg-gray-200"
+              }`}
+              title="Request a Movie"
+            >
+              <PlusCircle size={20} className="inline mr-1" /> Request Movie
+            </button>
+            {/* --- END NEW BUTTON --- */}
 
             {/* === APK Download Button REMOVED from desktop view === */}
 
@@ -4308,6 +4409,7 @@ export default function App() {
               "watchlater",
               "translated",
               "contact",
+              "request",
               ...(!authStatus.user || authStatus.user.isAnonymous
                 ? ["admin"]
                 : []),
