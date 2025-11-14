@@ -691,7 +691,7 @@ const Section = ({
                     </p>
                   ) : item.type === "Movie" && item.year && item.runtime ? (
                     <p className="font-medium truncate">
-                      {item.year} • {item.runtime} min
+                      {item.year} • {item.runtime} Min
                     </p>
                   ) : (
                     <p className="font-medium truncate">&nbsp;</p>
@@ -2515,12 +2515,7 @@ const ContentUploader = ({
             value={formData.title}
             onChange={handleChange}
             required
-            disabled={!!editingItem}
-            className={`w-full p-3 border rounded-lg text-white placeholder-gray-400 focus:ring-emerald-500 ${
-              !!editingItem
-                ? "bg-gray-600 opacity-70 border-gray-500"
-                : "bg-gray-700 border-gray-600 focus:border-emerald-500"
-            }`}
+            className="w-full p-3 border rounded-lg text-white placeholder-gray-400 focus:ring-emerald-500 bg-gray-700 border-gray-600 focus:border-emerald-500"
             placeholder="The Last Starfighter"
           />
         </div>
