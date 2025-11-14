@@ -1125,10 +1125,7 @@ const HomeView = ({
            {" "}
       <div
         className="relative w-full h-auto lg:h-[500px] bg-cover bg-center -mt-16"
-        style={{
-          backgroundImage:
-            "url(https://images.pexels.com/photos/109669/pexels-photo-109669.jpeg)",
-        }}
+        style={{ backgroundColor: "red" }}
       >
                 <div className="absolute inset-0 bg-black/60"></div>       {" "}
         {/* --- NEW MOBILE HERO STACK --- */}       {" "}
@@ -3748,7 +3745,7 @@ export default function App() {
             className={`text-2xl font-black text-amber-500 cursor-pointer`}
             onClick={() => navigate("home")}
           >
-            KIGALISTREAMS TEST
+            KIGALISTREAMS
           </h1>
           <form
             onSubmit={handleSearchSubmit}
