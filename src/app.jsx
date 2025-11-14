@@ -3748,7 +3748,7 @@ export default function App() {
             className={`text-2xl font-black text-amber-500 cursor-pointer`}
             onClick={() => navigate("home")}
           >
-            KIGALISTREAMS
+            KIGALISTREAMS TEST
           </h1>
           <form
             onSubmit={handleSearchSubmit}
