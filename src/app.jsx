@@ -1131,7 +1131,7 @@ const HomeView = ({
       >
         <div className="absolute inset-0 bg-black/60"></div>
 
-        {/* --- NEW MOBILE HERO STACK (UPDATED TO MATCH SAMPLE) --- */}
+        {/* --- NEW MOBILE HERO STACK (FINAL) --- */}
         <div className="relative z-10 container mx-auto pt-8 lg:hidden">
           {/* Container for the stacked cards */}
           <div
@@ -1145,23 +1145,23 @@ const HomeView = ({
                 let cornerClass = "rounded-xl"; // Default for side cards
 
                 if (index === 0) {
-                  // Left Card (No opacity-60)
+                  // Left Card (Smaller, tucked in)
                   itemClass =
-                    "absolute z-10 opacity-100 scale-80 -translate-x-[30%]";
+                    "absolute z-10 opacity-100 scale-75 -translate-x-[35%]";
                 } else if (index === 1) {
-                  // Center Card
+                  // Center Card (Taller)
                   itemClass = "absolute z-20 opacity-100 scale-100";
                   cornerClass = "rounded-2xl"; // Larger rounding for center
                 } else {
-                  // Right Card (No opacity-60)
+                  // Right Card (Smaller, tucked in)
                   itemClass =
-                    "absolute z-10 opacity-100 scale-80 translate-x-[30%]";
+                    "absolute z-10 opacity-100 scale-75 translate-x-[35%]";
                 }
 
                 return (
                   <div
                     key={`${item.id}-${index}-${currentCardIndex}`}
-                    className={`w-2/3 aspect-[2/3] transition-all duration-700 ease-in-out ${itemClass}`}
+                    className={`w-3/5 aspect-[2/3] transition-all duration-700 ease-in-out ${itemClass}`} // <-- w-3/5 is narrower
                     onClick={() => navigate("detail", item.id)} // Click on whole card
                   >
                     <img
@@ -1180,34 +1180,20 @@ const HomeView = ({
                         )}`;
                       }}
                     />
-
-                    {/* --- NEW PLAY BUTTON (like the sample) --- */}
-                    <div
-                      className="absolute inset-0 flex items-center justify-center"
-                      style={{ pointerEvents: "none" }} // Makes sure the click goes to the card
-                    >
-                      <div className="bg-black/50 rounded-full p-3">
-                        <Play
-                          size={32}
-                          className="text-white"
-                          fill="currentColor"
-                        />
-                      </div>
-                    </div>
-
-                    {/* The bg-black/30 overlay is now REMOVED */}
+                    
+                    {/* The Play Button and Dimming Overlay are REMOVED */}
                   </div>
                 );
               })
             ) : (
               // Loading/Fallback state
-              <div className="flex items-center justify-center w-2/3 aspect-[2/3] bg-gray-700 rounded-xl">
+              <div className="flex items-center justify-center w-3/5 aspect-[2/3] bg-gray-700 rounded-xl">
                 <p className="text-gray-400">Loading...</p>
               </div>
             )}
           </div>
         </div>
-        {/* --- END NEW MOBILE HERO STACK (UPDATED) --- */}
+        {/* --- END NEW MOBILE HERO STACK (FINAL) --- */}
 
         <div className="relative z-10 container mx-auto px-4 sm:px-6 pb-12 lg:pb-0 lg:h-full lg:flex lg:items-center">
           <div className="flex-1 max-w-lg text-center lg:text-left pt-4 lg:pt-0">
@@ -1219,7 +1205,7 @@ const HomeView = ({
             </h1>
             <p className="text-lg md:text-xl text-gray-200">
               Watch anywhere. Translated for you.
-            </p>
+            </WELCOME>
           </div>
           {/* --- DESKTOP HERO (FIXED) --- */}
           <div className="hidden lg:block flex-1 relative h-full">
