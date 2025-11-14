@@ -1147,7 +1147,7 @@ const HomeView = ({
                 if (index === 0) {
                   // Left Card (Smaller, tucked in)
                   itemClass =
-                    "absolute z-10 opacity-100 scale-70 -translate-x-[40%]";
+                    "absolute z-10 opacity-100 scale-75 -translate-x-[35%]";
                 } else if (index === 1) {
                   // Center Card (Taller)
                   itemClass = "absolute z-20 opacity-100 scale-100";
@@ -1155,19 +1155,19 @@ const HomeView = ({
                 } else {
                   // Right Card (Smaller, tucked in)
                   itemClass =
-                    "absolute z-10 opacity-100 scale-70 translate-x-[40%]";
+                    "absolute z-10 opacity-100 scale-75 translate-x-[35%]";
                 }
 
                 return (
                   <div
                     key={`${item.id}-${index}-${currentCardIndex}`}
-                    className={`w-1/2 aspect-[2/3] transition-all duration-700 ease-in-out ${itemClass}`} // <-- w-1/2 is narrower
+                    className={`w-3/5 aspect-[2/3] transition-all duration-700 ease-in-out ${itemClass}`} // <-- w-3/5 is narrower
                     onClick={() => navigate("detail", item.id)} // Click on whole card
                   >
                     <img
                       src={
                         item.thumbnail ||
-                        `https::placehold.co/400x600/1f2937/fff?text=${encodeURIComponent(
+                        `https://placehold.co/400x600/1f2937/fff?text=${encodeURIComponent(
                           item.title
                         )}`
                       }
@@ -1175,19 +1175,19 @@ const HomeView = ({
                       className={`w-full h-full object-cover shadow-2xl ${cornerClass}`}
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = `https::placehold.co/400x600/1f2937/fff?text=${encodeURIComponent(
+                        e.target.src = `https://placehold.co/400x600/1f2937/fff?text=${encodeURIComponent(
                           item.title
                         )}`;
                       }}
                     />
-
+                    
                     {/* The Play Button and Dimming Overlay are REMOVED */}
                   </div>
                 );
               })
             ) : (
               // Loading/Fallback state
-              <div className="flex items-center justify-center w-1/2 aspect-[2/3] bg-gray-700 rounded-xl">
+              <div className="flex items-center justify-center w-3/5 aspect-[2/3] bg-gray-700 rounded-xl">
                 <p className="text-gray-400">Loading...</p>
               </div>
             )}
@@ -1228,7 +1228,7 @@ const HomeView = ({
                         <img
                           src={
                             item.thumbnail ||
-                            `https::placehold.co/200x300/1f2937/fff?text=${encodeURIComponent(
+                            `https://placehold.co/200x300/1f2937/fff?text=${encodeURIComponent(
                               item.title
                             )}`
                           }
