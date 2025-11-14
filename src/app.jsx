@@ -536,7 +536,7 @@ const Card = (
   { item, onClick, onWatchLaterToggle, isWatchLater } // 1. Added props back
 ) => (
   <div
-    className="relative group rounded-lg shadow-xl overflow-hidden transform transition duration-300 hover:scale-[1.03] cursor-pointer"
+    className="relative group rounded-lg border border-gray-700/50 overflow-hidden transform transition duration-300 hover:scale-[1.03] cursor-pointer"
     style={{ viewTransitionName: `card-${item.id}` }}
     onClick={() => onClick("detail", item.id)} // Click on whole card
   >
@@ -572,7 +572,7 @@ const Card = (
           e.stopPropagation(); // Stop click from going to detail page
           onWatchLaterToggle(item.id);
         }}
-        className={`absolute top-2 left-2 p-1.5 rounded-full transition backdrop-blur-sm z-10 ${
+        className={`absolute top-2 left-2 p-1.5 rounded-full transition bg-black/50 z-10 ${
           isWatchLater
             ? `bg-amber-600 text-white hover:bg-amber-700 shadow-lg shadow-amber-600/30`
             : "bg-black/50 text-gray-300 hover:bg-black/70 hover:text-white"
@@ -992,7 +992,7 @@ const AdBanner = () => {
   // We center the 320x50 ad within the fixed banner space.
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 p-2 bg-yellow-900/20 backdrop-blur-sm z-40 flex justify-center items-center lg:hidden"
+      className="fixed bottom-0 left-0 right-0 p-2 bg-yellow-900/20 z-40 flex justify-center items-center lg:hidden"
       style={{ height: "66px" }}
     >
       <div ref={adContainerRef} style={{ width: "320px", height: "50px" }}>
@@ -3883,12 +3883,21 @@ export default function App() {
     document.body.className =
       theme === "dark" ? "bg-neutral-900 font-inter" : "bg-gray-100 font-inter";
     document.body.style.color = theme === "dark" ? "#f3f4f6" : "#1f2937";
-  }, [theme]);
+
+    // --- ADD THIS LOGIC ---
+    if (view === "home") {
+      document.body.classList.add("view-home");
+    } else {
+      document.body.classList.remove("view-home");
+    }
+    // --- END ADD ---
+  }, [theme, view]); // <-- ADD 'view' TO DEPENDENCY ARRAY
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  // const [isScrolled, setIsScrolled] = useState(false); // <-- DELETE THIS LINE
 
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const headerRef = useRef(null); // <-- ADD THIS LINE
   const profileMenuRef = useRef(null);
 
   useEffect(() => {
@@ -3907,19 +3916,26 @@ export default function App() {
   }, [profileMenuRef]);
 
   useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+
     const handleScroll = () => {
       if (window.scrollY > 10) {
-        setIsScrolled(true);
+        // This is a direct DOM change, NOT a React re-render. It's instant.
+        header.dataset.scrolled = "true";
       } else {
-        setIsScrolled(false);
+        header.dataset.scrolled = "false";
       }
     };
-    window.addEventListener("scroll", handleScroll);
-    handleScroll();
+
+    // { passive: true } is a small performance boost for scroll listeners
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // Run once on load
+
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, []);
+  }, []); // Empty dependency array is correct, it runs once
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -3941,6 +3957,12 @@ export default function App() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         .font-inter { font-family: 'Inter', sans-serif; }
+
+        /* --- ADD THIS NEW RULE --- */
+        body.view-home header[data-scrolled="false"] {
+          background-color: transparent;
+        }
+        /* --- END OF NEW RULE --- */
 
         /* --- HIDE THE MAIN SCROLLBAR --- */
         body {
@@ -4002,12 +4024,10 @@ export default function App() {
      
       `}</style>
       <header
+        ref={headerRef} // <-- ADD THIS
         className={`fixed top-0 left-0 right-0 z-50 shadow-lg transition-colors duration-300 ${
-          view === "home" && !isScrolled
-            ? "bg-transparent"
-            : theme === "dark"
-            ? "bg-gray-800"
-            : "bg-white"
+          // ALL THIS LOGIC IS REMOVED and handled by CSS now
+          theme === "dark" ? "bg-gray-800" : "bg-white"
         }`}
       >
         <div className="container mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
@@ -4051,9 +4071,7 @@ export default function App() {
             <button
               onClick={() => navigate("watchlater")}
               className={`hidden md:block p-2 rounded-lg transition-colors ${
-                view === "home" && !isScrolled
-                  ? "text-white hover:bg-white/20"
-                  : view === "watchlater"
+                view === "watchlater"
                   ? `bg-amber-600`
                   : theme === "dark"
                   ? "hover:bg-gray-700"
@@ -4066,9 +4084,7 @@ export default function App() {
             <button
               onClick={() => navigate("translated")}
               className={`hidden md:block p-2 rounded-lg transition-colors ${
-                view === "home" && !isScrolled
-                  ? "text-white hover:bg-white/20"
-                  : view === "translated"
+                view === "translated"
                   ? `bg-amber-600`
                   : theme === "dark"
                   ? "hover:bg-gray-700"
@@ -4084,9 +4100,7 @@ export default function App() {
             <div className="hidden lg:relative lg:block group">
               <button
                 className={`flex items-center p-2 rounded-lg transition-colors ${
-                  view === "home" && !isScrolled
-                    ? "text-white hover:bg-white/20"
-                    : theme === "dark"
+                  theme === "dark"
                     ? "hover:bg-gray-700"
                     : "hover:bg-gray-200"
                 }`}
@@ -4204,9 +4218,7 @@ export default function App() {
             <button
               onClick={() => navigate("contact")}
               className={`hidden sm:block p-2 rounded-lg transition-colors ${
-                view === "home" && !isScrolled
-                  ? "text-white hover:bg-white/20"
-                  : theme === "dark"
+                theme === "dark"
                   ? "hover:bg-gray-700"
                   : "hover:bg-gray-200"
               }`}
@@ -4226,9 +4238,7 @@ export default function App() {
             </button>
             <button
               className={`lg:hidden p-2 rounded-lg transition-colors ${
-                view === "home" && !isScrolled
-                  ? "text-white hover:bg-white/20"
-                  : theme === "dark"
+                theme === "dark"
                   ? "hover:bg-gray-700"
                   : "hover:bg-gray-200"
               }`}
