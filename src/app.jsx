@@ -1048,7 +1048,7 @@ const HomeView = ({
     return duplicatedItems;
   }, [trendingItems, sortedContent]); // --- STATE FOR NEW CARD STACK ---
 
-  const [currentCardIndex, setCurrentCardIndex] = useState(0); // --- MOBILE HERO LOGIC (15-MIN ROTATION) --- // 1. Get the base 8 items (Same as before)
+  const [currentCardIndex, setCurrentCardIndex] = useState(0); // --- MOBILE HERO LOGIC (NEW TIMERS) --- // 1. Get the base 8 items (Same as before)
 
   const baseHeroItems = useMemo(() => {
     const items = trendingItems.length > 0 ? trendingItems : sortedContent;
@@ -1060,41 +1060,67 @@ const HomeView = ({
       duplicatedItems = [...duplicatedItems, ...baseItems];
     }
     return duplicatedItems.slice(0, 8); // Ensure we only have 8 base items
-  }, [trendingItems, sortedContent]); // 2. State to track which GROUP of 3 is active (e.g., Group 0, Group 1, Group 2)
-
-  const [currentCardGroupIndex, setCurrentCardGroupIndex] = useState(0); // 3. State to manage the fade animation
-  const [isFading, setIsFading] = useState(false); // 4. Calculate total number of groups (e.g., 8 items / 3 per group = 3 groups)
-  const totalGroups = Math.ceil(baseHeroItems.length / 3); // 5. Get the 3 items for the CURRENT group
+  }, [trendingItems, sortedContent]); // 2. State for the 15-MINUTE group change
+  const [currentCardGroupIndex, setCurrentCardGroupIndex] = useState(0); // 3. NEW State for the 20-SECOND internal rotation (0, 1, or 2)
+  const [internalRotationIndex, setInternalRotationIndex] = useState(0); // 4. State for fade animation
+  const [isFading, setIsFading] = useState(false); // 5. Calculate total number of groups (e.g., 8 items / 3 per group = 3 groups)
+  const totalGroups = Math.ceil(baseHeroItems.length / 3); // 6. Get the 3 items for the CURRENT group, AND apply the internal rotation
 
   const heroItemsForStack = useMemo(() => {
-    if (baseHeroItems.length === 0) return []; // Handle cases with fewer than 3 items
-    if (baseHeroItems.length === 1) {
-      return [baseHeroItems[0], baseHeroItems[0], baseHeroItems[0]];
-    }
-    if (baseHeroItems.length === 2) {
-      return [baseHeroItems[1], baseHeroItems[0], baseHeroItems[1]];
-    } // Calculate the starting index for the current group (0, 3, 6, ...)
-    const baseIndex = currentCardGroupIndex * 3; // Get the 3 items for the stack, looping if we reach the end
-    const centerItem = baseHeroItems[(baseIndex + 0) % baseHeroItems.length];
-    const leftItem = baseHeroItems[(baseIndex + 1) % baseHeroItems.length];
-    const rightItem = baseHeroItems[(baseIndex + 2) % baseHeroItems.length]; // Return in [Left, Center, Right] display order
+    if (baseHeroItems.length === 0) return [];
 
-    return [leftItem, centerItem, rightItem];
-  }, [currentCardGroupIndex, baseHeroItems]); // Re-runs when the group index changes // 6. The 15-minute timer
+    let baseStack = [];
+    if (baseHeroItems.length === 1) {
+      baseStack = [baseHeroItems[0], baseHeroItems[0], baseHeroItems[0]];
+    } else if (baseHeroItems.length === 2) {
+      baseStack = [baseHeroItems[1], baseHeroItems[0], baseHeroItems[1]];
+    } else {
+      const baseIndex = currentCardGroupIndex * 3;
+      const centerItem = baseHeroItems[(baseIndex + 0) % baseHeroItems.length];
+      const leftItem = baseHeroItems[(baseIndex + 1) % baseHeroItems.length];
+      const rightItem = baseHeroItems[(baseIndex + 2) % baseHeroItems.length];
+      baseStack = [leftItem, centerItem, rightItem]; // [Display Left, Display Center, Display Right]
+    }
+
+    // Now, apply the internal rotation based on the 20-second timer
+    if (internalRotationIndex === 0) {
+      return baseStack; // [Left, Center, Right]
+    } else if (internalRotationIndex === 1) {
+      return [baseStack[2], baseStack[0], baseStack[1]]; // [Right, Left, Center]
+    } else {
+      // internalRotationIndex === 2
+      return [baseStack[1], baseStack[2], baseStack[0]]; // [Center, Right, Left]
+    }
+  }, [currentCardGroupIndex, baseHeroItems, internalRotationIndex]); // <-- Added internalRotationIndex dependency // 7. The 20-SECOND (Internal Shift) Timer
   console.log("HERO ITEMS FOR STACK:", heroItemsForStack);
   useEffect(() => {
+    if (baseHeroItems.length <= 1) return; // Don't run timer if not enough items
+
+    const internalInterval = setInterval(() => {
+      // This just cycles the internalRotationIndex (0, 1, 2, 0, 1, 2...)
+      setInternalRotationIndex((prevIndex) => (prevIndex + 1) % 3);
+    }, 20 * 1000); // 20 seconds
+
+    return () => clearInterval(internalInterval);
+  }, [baseHeroItems.length]); // 8. The 15-MINUTE (New Group) Timer
+  useEffect(() => {
     if (totalGroups <= 1) return; // Don't run timer if there's only 1 group
-    const interval = setInterval(() => {
+
+    const groupInterval = setInterval(() => {
       // 1. Start fading out
-      setIsFading(true); // 2. Wait for fade-out to finish (500ms)
+      setIsFading(true);
+      // 2. Wait for fade-out to finish (500ms)
       setTimeout(() => {
-        // 3. Change the content (go to next group)
-        setCurrentCardGroupIndex((prevIndex) => (prevIndex + 1) % totalGroups); // 4. Start fading back in
+        // 3. Change the content (go to next group of 3)
+        setCurrentCardGroupIndex((prevIndex) => (prevIndex + 1) % totalGroups);
+        // 4. RESET the 20-second timer's position for the new group
+        setInternalRotationIndex(0);
+        // 5. Start fading back in
         setIsFading(false);
       }, 500); // This 500ms MUST match the duration in the JSX
-    }, 15 * 60 * 1000); // 15 minutes (15 * 60 * 1000ms)
+    }, 15 * 60 * 1000); // 15 minutes
 
-    return () => clearInterval(interval);
+    return () => clearInterval(groupInterval);
   }, [totalGroups]); // --- END 15-MINUTE LOGIC ---
   const topRatedItems = useMemo(
     () =>
@@ -1135,7 +1161,8 @@ const HomeView = ({
         <div className="relative z-10 container mx-auto pt-8 lg:hidden">
           {/* Container for the stacked cards */}
           <div
-            className={`relative w-full h-80 flex items-end justify-center overflow-hidden transition-opacity duration-500 ease-in-out ${ // <-- ALIGN TO BOTTOM
+            className={`relative w-full h-80 flex items-end justify-center overflow-hidden transition-opacity duration-500 ease-in-out ${
+              // <-- ALIGN TO BOTTOM
               isFading ? "opacity-0" : "opacity-100"
             }`}
           >
@@ -1151,20 +1178,20 @@ const HomeView = ({
                   itemClass = "z-10 -mr-28";
                   heightClass = "h-5/6";
                   glowClass =
-                    "border-2 border-pink-500/70 shadow-lg shadow-pink-500/20"; // <-- Edge glow
+                    "border border-pink-500/50 shadow-md shadow-pink-500/20"; // <-- NARROWER glow
                 } else if (index === 1) {
                   // Center Card
                   itemClass = "z-20";
                   heightClass = "h-full";
                   cornerClass = "rounded-2xl";
                   glowClass =
-                    "border-2 border-amber-500/70 shadow-lg shadow-amber-500/20"; // <-- Edge glow
+                    "border border-amber-500/50 shadow-md shadow-amber-500/20"; // <-- NARROWER glow
                 } else {
                   // Right Card
                   itemClass = "z-10 -ml-28";
                   heightClass = "h-5/6";
                   glowClass =
-                    "border-2 border-blue-500/70 shadow-lg shadow-blue-500/20"; // <-- Edge glow
+                    "border border-blue-500/50 shadow-md shadow-blue-500/20"; // <-- NARROWER glow
                 }
 
                 return (
@@ -1326,8 +1353,7 @@ const HomeView = ({
         </main>
         {/* This is the correct footer with the padding to stay above the ad */}
         <footer className="container mx-auto relative z-20 w-full text-center pt-2 mt-2 border-t border-gray-700/30 text-xs text-gray-400 pb-24">
-          &copy; {new Date().getFullYear()} KigaliStreams. All Rights
-          Reserved.
+          &copy; {new Date().getFullYear()} KigaliStreams. All Rights Reserved.
         </footer>
       </div>
     </div>
@@ -3517,7 +3543,7 @@ export default function App() {
         /* --- ADD THIS NEW CLASS --- */
         .performant-bg {
           /* 1. This is the solid color for mobile (matches bg-neutral-900) */
-          background-color: #171717; 
+          background-color: #000000; 
           transform: scale(1.05);
         }
 
