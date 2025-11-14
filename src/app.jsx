@@ -1180,7 +1180,7 @@ const HomeView = ({
                         )}`;
                       }}
                     />
-                    
+
                     {/* The Play Button and Dimming Overlay are REMOVED */}
                   </div>
                 );
@@ -1205,7 +1205,7 @@ const HomeView = ({
             </h1>
             <p className="text-lg md:text-xl text-gray-200">
               Watch anywhere. Translated for you.
-            </WELCOME>
+            </p>
           </div>
           {/* --- DESKTOP HERO (FIXED) --- */}
           <div className="hidden lg:block flex-1 relative h-full">
@@ -1316,8 +1316,7 @@ const HomeView = ({
         </main>
         {/* This is the correct footer with the padding to stay above the ad */}
         <footer className="container mx-auto relative z-20 w-full text-center pt-2 mt-2 border-t border-gray-700/30 text-xs text-gray-400 pb-24">
-          &copy; {new Date().getFullYear()} KigaliStreams. All Rights
-          Reserved.
+          &copy; {new Date().getFullYear()} KigaliStreams. All Rights Reserved.
         </footer>
       </div>
     </div>
