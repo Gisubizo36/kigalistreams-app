@@ -1061,7 +1061,7 @@ const HomeView = ({
     }
     return duplicatedItems.slice(0, 8); // Ensure we only have 8 base items
   }, [trendingItems, sortedContent]); // 2. State for the 15-MINUTE group change
-  const [currentCardGroupIndex, setCurrentCardGroupIndex] = useState(0); // 3. NEW State for the 20-SECOND internal rotation (0, 1, or 2)
+  const [currentCardGroupIndex, setCurrentCardGroupIndex] = useState(0); // 3. NEW State for the 1-MINUTE internal rotation (0, 1, or 2)
   const [internalRotationIndex, setInternalRotationIndex] = useState(0); // 4. State for fade animation
   const [isFading, setIsFading] = useState(false); // 5. Calculate total number of groups (e.g., 8 items / 3 per group = 3 groups)
   const totalGroups = Math.ceil(baseHeroItems.length / 3); // 6. Get the 3 items for the CURRENT group, AND apply the internal rotation
@@ -1082,7 +1082,7 @@ const HomeView = ({
       baseStack = [leftItem, centerItem, rightItem]; // [Display Left, Display Center, Display Right]
     }
 
-    // Now, apply the internal rotation based on the 20-second timer
+    // Now, apply the internal rotation based on the 1-minute timer
     if (internalRotationIndex === 0) {
       return baseStack; // [Left, Center, Right]
     } else if (internalRotationIndex === 1) {
@@ -1091,7 +1091,7 @@ const HomeView = ({
       // internalRotationIndex === 2
       return [baseStack[1], baseStack[2], baseStack[0]]; // [Center, Right, Left]
     }
-  }, [currentCardGroupIndex, baseHeroItems, internalRotationIndex]); // <-- Added internalRotationIndex dependency // 7. The 20-SECOND (Internal Shift) Timer
+  }, [currentCardGroupIndex, baseHeroItems, internalRotationIndex]); // <-- Added internalRotationIndex dependency // 7. The 1-MINUTE (Internal Shift) Timer
   console.log("HERO ITEMS FOR STACK:", heroItemsForStack);
   useEffect(() => {
     if (baseHeroItems.length <= 1) return; // Don't run timer if not enough items
@@ -1099,7 +1099,7 @@ const HomeView = ({
     const internalInterval = setInterval(() => {
       // This just cycles the internalRotationIndex (0, 1, 2, 0, 1, 2...)
       setInternalRotationIndex((prevIndex) => (prevIndex + 1) % 3);
-    }, 20 * 1000); // 20 seconds
+    }, 60 * 1000); // 1 minute (WAS 20 * 1000)
 
     return () => clearInterval(internalInterval);
   }, [baseHeroItems.length]); // 8. The 15-MINUTE (New Group) Timer
@@ -1113,7 +1113,7 @@ const HomeView = ({
       setTimeout(() => {
         // 3. Change the content (go to next group of 3)
         setCurrentCardGroupIndex((prevIndex) => (prevIndex + 1) % totalGroups);
-        // 4. RESET the 20-second timer's position for the new group
+        // 4. RESET the 1-minute timer's position for the new group
         setInternalRotationIndex(0);
         // 5. Start fading back in
         setIsFading(false);
@@ -1241,7 +1241,7 @@ const HomeView = ({
               Unlimited Movies, TV Shows, and More.
             </h1>
             <p className="text-lg md:text-xl text-gray-200">
-              Watch anywhere. Translated for you.
+              Watch anywhere. Interpreted for you in Kinyarwanda.
             </p>
           </div>
           {/* --- DESKTOP HERO (FIXED) --- */}
