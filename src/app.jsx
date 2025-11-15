@@ -1933,9 +1933,7 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
   };
 
   const handleDeleteRequest = async (requestId) => {
-    if (!window.confirm("Are you sure you want to delete this request?")) {
-      return;
-    }
+    // The confirmation "if" block has been removed.
     try {
       const docRef = doc(getRequestsCollectionRef(db), requestId);
       await deleteDoc(docRef);
