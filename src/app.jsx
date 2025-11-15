@@ -17,6 +17,7 @@ import {
   query,
   getDoc,
   deleteDoc,
+  orderBy,
 } from "firebase/firestore";
 import {
   getAuth,
@@ -4144,15 +4145,7 @@ export default function App() {
     document.body.className =
       theme === "dark" ? "bg-neutral-900 font-inter" : "bg-gray-100 font-inter";
     document.body.style.color = theme === "dark" ? "#f3f4f6" : "#1f2937";
-
-    // --- ADD THIS LOGIC ---
-    if (view === "home") {
-      document.body.classList.add("view-home");
-    } else {
-      document.body.classList.remove("view-home");
-    }
-    // --- END ADD ---
-  }, [theme, view]); // <-- ADD 'view' TO DEPENDENCY ARRAY
+  }, [theme, view]); // <-- Just make sure 'view' is still in the dependency array
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   // const [isScrolled, setIsScrolled] = useState(false); // <-- DELETE THIS LINE
@@ -4219,10 +4212,6 @@ export default function App() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         .font-inter { font-family: 'Inter', sans-serif; }
 
-        /* --- ADD THIS NEW RULE --- */
-        body.view-home header[data-scrolled="false"] {
-          background-color: transparent;
-        }
         /* --- END OF NEW RULE --- */
 
         /* --- HIDE THE MAIN SCROLLBAR --- */
@@ -4284,11 +4273,11 @@ export default function App() {
         /* --- END OF NEW CLASS --- */
      
       `}</style>
-      <header
-        ref={headerRef} // <-- ADD THIS
+     <header
+        ref={headerRef}
         className={`fixed top-0 left-0 right-0 z-30 shadow-lg transition-colors duration-300 ${
-          // ALL THIS LOGIC IS REMOVED and handled by CSS now
-          "" // <-- REMOVED the theme-based background colors
+          // Add the background colors back based on the theme
+          theme === "dark" ? "bg-gray-800" : "bg-white"
         }`}
       >
         <div className="container mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
