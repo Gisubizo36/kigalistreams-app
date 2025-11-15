@@ -1182,7 +1182,7 @@ const HomeView = ({
   );
 
   return (
-    <div className="min-h-screen pt-32 lg:pt-24 relative">
+    <div className="min-h-screen pt-40 lg:pt-24 relative">
       <div
         className="relative w-full h-auto lg:h-[500px] bg-cover bg-center -mt-16"
         style={{
@@ -1884,6 +1884,7 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
   }, [db]);
 
   // 2. Handle the form submission
+  // --- REPLACE YOUR ENTIRE handleSubmit FUNCTION WITH THIS ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newRequest.trim()) {
@@ -1912,12 +1913,11 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
       status: "pending", // Admin can see this
     };
 
-   // ...
-   try {
-    // Use a generated ID
-    const newDocRef = doc(getRequestsCollectionRef(db)); // <-- This is the fix
-    await setDoc(newDocRef, requestData);
-// ...
+    try {
+      // This is the corrected line that uses your helper function
+      const newDocRef = doc(getRequestsCollectionRef(db));
+      
+      await setDoc(newDocRef, requestData);
       setNewRequest("");
       setMessage("Success! Your request has been posted.");
     } catch (error) {
@@ -1927,6 +1927,7 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
       setIsPosting(false);
     }
   };
+  // --- END OF REPLACEMENT ---
 
   const renderContent = () => {
     if (isLoading) {
