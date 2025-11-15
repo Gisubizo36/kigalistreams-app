@@ -1885,49 +1885,48 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
 
   // 2. Handle the form submission
   // --- REPLACE YOUR ENTIRE handleSubmit FUNCTION WITH THIS ---
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!newRequest.trim()) {
-      setMessage("Error: Please write a request before submitting.");
-      return;
-    }
-    if (authStatus.user.isAnonymous) {
-      setMessage("Error: You must be logged in to make a request.");
-      return;
-    }
-    if (!userProfile?.username) {
-      setMessage(
-        "Error: You must have a username to post. Please update your profile (feature coming soon)."
-      );
-      return;
-    }
+// --- REPLACE YOUR ENTIR handleSubmit FUNCTION WITH THIS ---
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!newRequest.trim()) {
+    setMessage("Error: Please write a request before submitting.");
+    return;
+  }
+  if (authStatus.user.isAnonymous) {
+    setMessage("Error: You must be logged in to make a request.");
+    return;
+  }
 
-    setIsPosting(true);
-    setMessage("");
+  // --- We removed the username check that was here ---
 
-    const requestData = {
-      userId: authStatus.userId,
-      username: userProfile.username,
-      requestText: newRequest.trim(),
-      timestamp: Date.now(),
-      status: "pending", // Admin can see this
-    };
+  setIsPosting(true);
+  setMessage("");
 
-    try {
-      // This is the corrected line that uses your helper function
-      const newDocRef = doc(getRequestsCollectionRef(db));
-      
-      await setDoc(newDocRef, requestData);
-      setNewRequest("");
-      setMessage("Success! Your request has been posted.");
-    } catch (error) {
-      console.error("Error posting request:", error);
-      setMessage(`Error: ${error.message}`);
-    } finally {
-      setIsPosting(false);
-    }
+  // This line creates a fallback:
+  // It tries to find a username, then an email, then just uses "User"
+  const usernameToPost = userProfile?.username || userProfile?.email || "User";
+
+  const requestData = {
+    userId: authStatus.userId,
+    username: usernameToPost, // <-- Use the new fallback username
+    requestText: newRequest.trim(),
+    timestamp: Date.now(),
+    status: "pending", 
   };
-  // --- END OF REPLACEMENT ---
+
+  try {
+    const newDocRef = doc(getRequestsCollectionRef(db));
+    await setDoc(newDocRef, requestData);
+    setNewRequest("");
+    setMessage("Success! Your request has been posted.");
+  } catch (error) {
+    console.error("Error posting request:", error);
+    setMessage(`Error: ${error.message}`);
+  } finally {
+    setIsPosting(false);
+  }
+};
+// --- END OF REPLACEMENT ---
 
   const renderContent = () => {
     if (isLoading) {
