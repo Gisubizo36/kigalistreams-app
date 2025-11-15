@@ -4113,7 +4113,7 @@ export default function App() {
       `}</style>
       <header
         ref={headerRef} // <-- ADD THIS
-        className={`fixed top-0 left-0 right-0 z-100 shadow-lg transition-colors duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-30 shadow-lg transition-colors duration-300 ${
           // ALL THIS LOGIC IS REMOVED and handled by CSS now
           theme === "dark" ? "bg-gray-800" : "bg-white"
         }`}
