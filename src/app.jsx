@@ -1041,6 +1041,7 @@ const HomeView = ({
   watchLater,
   navigate,
   toggleWatchLater,
+  isContentLoading,
 }) => {
   // --- STATE FOR CAROUSEL ---
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
@@ -3934,6 +3935,7 @@ export default function App() {
         watchLater={watchLater}
         navigate={navigate}
         toggleWatchLater={toggleWatchLater}
+        isContentLoading={isContentLoading}
       />
     );
   }, [
