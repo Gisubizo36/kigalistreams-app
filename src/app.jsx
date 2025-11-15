@@ -151,7 +151,8 @@ const getUserDocRef = (db, userId) =>
 const getTranslatorsDocRef = (db) =>
   doc(db, "artifacts", appId, "config", "translators_list");
 const getUserProfileDocRef = (db, userId) => doc(db, "users", userId);
-
+const getRequestsCollectionRef = (db) =>
+  collection(db, "artifacts", appId, "public", "data", "movie_requests");
 // URL Hash Utilities
 const getInitialView = () => {
   const hash = window.location.hash.slice(1);
@@ -1180,7 +1181,7 @@ const HomeView = ({
   );
 
   return (
-    <div className="min-h-screen pt-24 relative">
+    <div className="min-h-screen pt-32 lg:pt-24 relative">
       <div
         className="relative w-full h-auto lg:h-[500px] bg-cover bg-center -mt-16"
         style={{
@@ -1844,43 +1845,209 @@ const ContactView = ({ navigate }) => (
 // --- START: NEW REQUEST VIEW ---
 // Paste this after the ContactView component (around line 1610)
 
-const RequestView = ({ navigate }) => (
-  <div className="relative w-full min-h-screen pt-16 flex items-center justify-center">
-    <div
-      className="absolute inset-0 z-0 performant-bg"
-      style={{ marginTop: "-4rem" }}
-    ></div>
-    <div className="relative z-10 container mx-auto py-8 px-4 sm:px-6 max-w-lg">
-      <div className="bg-gray-800 p-8 rounded-xl shadow-2xl">
-        <h1 className="text-3xl font-bold text-white mb-6 text-center">
-          Request a Movie or TV Show
-        </h1>
-        <p className="text-gray-400 mb-8 text-center">
-          Is there something you want to watch that's not on KigaliStreams? Let
-          us know! The best way to send a request is via WhatsApp or Email.
+// --- START: NEW REQUEST VIEW ---
+// Paste this after the ContactView component (around line 1610)
+
+const RequestView = ({ navigate, authStatus, userProfile }) => {
+  const [requests, setRequests] = useState([]);
+  const [newRequest, setNewRequest] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [message, setMessage] = useState("");
+  const [isPosting, setIsPosting] = useState(false);
+
+  // 1. Get all existing requests from Firestore
+  useEffect(() => {
+    if (!db) return;
+    setIsLoading(true);
+    const q = query(
+      getRequestsCollectionRef(db),
+      orderBy("timestamp", "desc")
+    );
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const items = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setRequests(items);
+        setIsLoading(false);
+      },
+      (error) => {
+        console.error("Error fetching requests:", error);
+        setMessage("Error: Could not load requests.");
+        setIsLoading(false);
+      }
+    );
+    return () => unsubscribe();
+  }, [db]);
+
+  // 2. Handle the form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!newRequest.trim()) {
+      setMessage("Error: Please write a request before submitting.");
+      return;
+    }
+    if (authStatus.user.isAnonymous) {
+      setMessage("Error: You must be logged in to make a request.");
+      return;
+    }
+    if (!userProfile?.username) {
+      setMessage(
+        "Error: You must have a username to post. Please update your profile (feature coming soon)."
+      );
+      return;
+    }
+
+    setIsPosting(true);
+    setMessage("");
+
+    const requestData = {
+      userId: authStatus.userId,
+      username: userProfile.username,
+      requestText: newRequest.trim(),
+      timestamp: Date.now(),
+      status: "pending", // Admin can see this
+    };
+
+    try {
+      // Use a generated ID
+      const newDocRef = doc(collection(db, "movie_requests"));
+      await setDoc(newDocRef, requestData);
+      setNewRequest("");
+      setMessage("Success! Your request has been posted.");
+    } catch (error) {
+      console.error("Error posting request:", error);
+      setMessage(`Error: ${error.message}`);
+    } finally {
+      setIsPosting(false);
+    }
+  };
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex justify-center items-center h-40">
+          <Hash size={32} className="animate-spin text-teal-400" />
+        </div>
+      );
+    }
+
+    if (requests.length === 0) {
+      return (
+        <p className="text-gray-400 text-center py-8">
+          No requests have been made yet. Be the first!
         </p>
-        <div className="space-y-6">
-          <a
-            href="https://wa.me/250787852414"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center bg-green-600 hover:bg-green-700 text-white font-semibold py-4 rounded-xl transition shadow-lg shadow-green-600/30"
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        {requests.map((req) => (
+          <div
+            key={req.id}
+            className="bg-gray-700/50 p-4 rounded-lg border border-gray-600"
           >
-            <MessageSquare size={24} className="mr-3" />
-            Send Request via WhatsApp
-          </a>
-          <a
-            href="mailto:kigalistream.s@gmai.com?subject=Movie/TV Show Request"
-            className={`flex items-center justify-center bg-amber-600 hover:bg-emerald-700 text-white font-semibold py-4 rounded-xl transition shadow-lg shadow-emerald-600/30`}
-          >
-            <Mail size={24} className="mr-3" />
-            Send Request via Email
-          </a>
+            <div className="flex justify-between items-center mb-2">
+              <p className="flex items-center text-emerald-400 font-semibold text-sm">
+                <User size={14} className="mr-2" />
+                {req.username}
+              </p>
+              <p className="text-gray-500 text-xs">
+                {new Date(req.timestamp).toLocaleString()}
+              </p>
+            </div>
+            <p className="text-gray-200">{req.requestText}</p>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <div className="relative w-full min-h-screen pt-32 lg:pt-24">
+      <div
+        className="absolute inset-0 z-0 performant-bg"
+        style={{ marginTop: "-4rem" }}
+      ></div>
+      <div className="relative z-10 container mx-auto py-8 px-4 sm:px-6 max-w-2xl">
+        <div className="bg-gray-800 p-6 sm:p-8 rounded-xl shadow-2xl">
+          <h1 className="text-3xl font-bold text-white mb-4 text-center">
+            Movie & TV Show Requests
+          </h1>
+          <p className="text-gray-400 mb-6 text-center">
+            See what others have requested or add your own.
+          </p>
+
+          {/* --- REQUEST LIST --- */}
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-white mb-4">
+              Community Requests
+            </h2>
+            {renderContent()}
+          </div>
+
+          {/* --- POSTING FORM --- */}
+          <div className="border-t border-gray-700 pt-6">
+            {authStatus.user && !authStatus.user.isAnonymous ? (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <h3 className="text-lg font-semibold text-white">
+                  Post a new request
+                </h3>
+                <div>
+                  <textarea
+                    value={newRequest}
+                    onChange={(e) => setNewRequest(e.target.value)}
+                    rows="4"
+                    className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500 focus:ring-emerald-500"
+                    placeholder="I'd love to see 'The Matrix' translated by Rocky..."
+                  />
+                </div>
+                {message && (
+                  <p
+                    className={`text-sm font-semibold ${
+                      message.includes("Error")
+                        ? "text-red-400"
+                        : "text-green-400"
+                    }`}
+                  >
+                    {message}
+                  </p>
+                )}
+                <button
+                  type="submit"
+                  disabled={isPosting}
+                  className={`w-full flex items-center justify-center bg-amber-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-emerald-600/30 ${
+                    isPosting ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                >
+                  {isPosting ? (
+                    <Hash size={20} className="animate-spin" />
+                  ) : (
+                    "Submit Request"
+                  )}
+                </button>
+              </form>
+            ) : (
+              <div className="text-center p-6 bg-gray-700/50 rounded-lg">
+                <p className="text-lg text-gray-300 mb-4">
+                  You must be logged in to post a request.
+                </p>
+                <button
+                  onClick={() => navigate("admin")}
+                  className={`bg-amber-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-xl transition`}
+                >
+                  Login or Sign Up
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 // --- END: NEW REQUEST VIEW ---
 
 const LoginView = ({ navigate }) => {
@@ -3837,7 +4004,13 @@ export default function App() {
     }
     if (view === "contact") return <ContactView navigate={navigate} />;
     if (view === "request") {
-      return <RequestView navigate={navigate} />;
+      return (
+        <RequestView
+          navigate={navigate}
+          authStatus={authStatus}
+          userProfile={userProfile}
+        />
+      );
     }
     if (view === "admin") {
       if (isAdmin) {
@@ -4115,7 +4288,7 @@ export default function App() {
         ref={headerRef} // <-- ADD THIS
         className={`fixed top-0 left-0 right-0 z-30 shadow-lg transition-colors duration-300 ${
           // ALL THIS LOGIC IS REMOVED and handled by CSS now
-          theme === "dark" ? "bg-gray-800" : "bg-white"
+          "" // <-- REMOVED the theme-based background colors
         }`}
       >
         <div className="container mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
