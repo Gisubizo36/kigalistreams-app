@@ -2052,7 +2052,138 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
   );
 };
 // --- END: NEW REQUEST VIEW ---
+// --- START: NEW WATCH LATER VIEW ---
+// Paste this after your RequestView component
 
+const WatchLaterView = ({
+  content,
+  watchLater,
+  navigate,
+  toggleWatchLater,
+}) => {
+  const watchLaterItems = content.filter((item) =>
+    watchLater.includes(item.id)
+  );
+
+  return (
+    <div className="relative w-full min-h-screen pt-32 lg:pt-24">
+      <div
+        className="absolute inset-0 z-0 performant-bg"
+        style={{ marginTop: "-4rem" }}
+      ></div>
+      <div className="relative z-10 container mx-auto py-8 px-4 sm:px-6">
+        <h1 className="text-3xl font-bold text-white mb-6 flex items-center">
+          <Clock size={28} className="mr-3 text-amber-500" />
+          My Watch Later List
+        </h1>
+        {watchLaterItems.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+            {watchLaterItems.map((item) => (
+              <Card
+                key={item.id}
+                item={item}
+                onClick={navigate}
+                onWatchLaterToggle={toggleWatchLater}
+                isWatchLater={true} // It's always true on this page
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-400 text-center py-10">
+            You haven't added any movies or shows to your watch later list yet.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// --- END: NEW WATCH LATER VIEW ---
+
+// --- START: NEW TRANSLATED FILMS VIEW ---
+// Paste this right after the WatchLaterView component above
+
+const TranslatedFilmsView = ({
+  content,
+  navigate,
+  toggleWatchLater,
+  watchLater,
+  selectedTranslator,
+  setSelectedTranslator,
+  translators,
+  isLoadingTranslators,
+}) => {
+  const translatedItems = content.filter((item) => {
+    // 1. Must have a translator
+    if (!item.translator) return false;
+    // 2. If a filter is selected, it must match
+    if (selectedTranslator && item.translator !== selectedTranslator)
+      return false;
+    // 3. If no filter is selected (or it matches), include it
+    return true;
+  });
+
+  return (
+    <div className="relative w-full min-h-screen pt-32 lg:pt-24">
+      <div
+        className="absolute inset-0 z-0 performant-bg"
+        style={{ marginTop: "-4rem" }}
+      ></div>
+      <div className="relative z-10 container mx-auto py-8 px-4 sm:px-6">
+        <h1 className="text-3xl font-bold text-white mb-6 flex items-center">
+          <BookOpen size={28} className="mr-3 text-amber-500" />
+          Translated Content
+        </h1>
+
+        {/* --- Translator Filter Dropdown --- */}
+        <div className="mb-8 max-w-sm">
+          <label className="block text-gray-300 mb-2 font-semibold">
+            Filter by Translator
+          </label>
+          <select
+            value={selectedTranslator || ""}
+            onChange={(e) => setSelectedTranslator(e.target.value || null)}
+            disabled={isLoadingTranslators}
+            className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-teal-500 focus:ring-teal-500 disabled:opacity-50"
+          >
+            <option value="">
+              {isLoadingTranslators
+                ? "Loading..."
+                : "-- Show All Translators --"}
+            </option>
+            {!isLoadingTranslators &&
+              translators.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+          </select>
+        </div>
+
+        {/* --- Content Grid --- */}
+        {translatedItems.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+            {translatedItems.map((item) => (
+              <Card
+                key={item.id}
+                item={item}
+                onClick={navigate}
+                onWatchLaterToggle={toggleWatchLater}
+                isWatchLater={watchLater.includes(item.id)}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-400 text-center py-10">
+            No translated content found{selectedTranslator ? ` for "${selectedTranslator}"` : ""}.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// --- END: NEW TRANSLATED FILMS VIEW ---
 const LoginView = ({ navigate }) => {
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [username, setUsername] = useState("");
