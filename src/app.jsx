@@ -1912,10 +1912,12 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
       status: "pending", // Admin can see this
     };
 
-    try {
-      // Use a generated ID
-      const newDocRef = doc(collection(db, "movie_requests"));
-      await setDoc(newDocRef, requestData);
+   // ...
+   try {
+    // Use a generated ID
+    const newDocRef = doc(getRequestsCollectionRef(db)); // <-- This is the fix
+    await setDoc(newDocRef, requestData);
+// ...
       setNewRequest("");
       setMessage("Success! Your request has been posted.");
     } catch (error) {
@@ -4145,7 +4147,15 @@ export default function App() {
     document.body.className =
       theme === "dark" ? "bg-neutral-900 font-inter" : "bg-gray-100 font-inter";
     document.body.style.color = theme === "dark" ? "#f3f4f6" : "#1f2937";
-  }, [theme, view]); // <-- Just make sure 'view' is still in the dependency array
+
+    // --- ADD THIS LOGIC BACK ---
+    if (view === "home") {
+      document.body.classList.add("view-home");
+    } else {
+      document.body.classList.remove("view-home");
+    }
+    // --- END ADD ---
+  }, [theme, view]);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   // const [isScrolled, setIsScrolled] = useState(false); // <-- DELETE THIS LINE
@@ -4211,7 +4221,10 @@ export default function App() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         .font-inter { font-family: 'Inter', sans-serif; }
-
+        /* --- ADD THIS RULE BACK --- */
+        body.view-home header[data-scrolled="false"] {
+          background-color: transparent;
+        }
         /* --- END OF NEW RULE --- */
 
         /* --- HIDE THE MAIN SCROLLBAR --- */
