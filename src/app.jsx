@@ -3350,7 +3350,7 @@ function Header({
       >
         <div className="container mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           <h1
-            className={`text-2xl font-black text-amber-500 cursor-pointer`}
+          className={`text-2xl font-black text-amber-500 cursor-pointer flex-shrink-0`}
             onClick={() => navigate("home")}
           >
             KIGALISTREAMS
@@ -3385,7 +3385,7 @@ function Header({
               <Search size={20} />
             </button>
           </form>
-          <nav className="flex items-center space-x-4">
+          <nav className="flex items-center space-x-4 flex-shrink-0">
             <button
               onClick={() => navigate("watchlater")}
               className={`hidden md:block p-2 rounded-lg transition-colors ${
