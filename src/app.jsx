@@ -1848,20 +1848,14 @@ const ContactView = ({ navigate }) => (
 
 // --- START: NEW REQUEST VIEW ---
 // Paste this after the ContactView component (around line 1610)
-
-// --- START: REPLACE YOUR ENTIRE RequestView COMPONENT WITH THIS ---
-
-// --- START: NEW, FIXED RequestView COMPONENT ---
-
 const RequestView = ({ navigate, authStatus, userProfile }) => {
   const [requests, setRequests] = useState([]);
   const [newRequest, setNewRequest] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [isPosting, setIsPosting] = useState(false);
-  const formRef = useRef(null); // For 'Enter to Submit'
+  const formRef = useRef(null);
 
-  // 1. Get all existing requests from Firestore
   useEffect(() => {
     if (!db) return;
     setIsLoading(true);
@@ -1888,7 +1882,6 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
     return () => unsubscribe();
   }, [db]);
 
-  // 2. Handle the form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newRequest.trim()) {
@@ -1903,7 +1896,6 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
     setIsPosting(true);
     setMessage("");
 
-    // FIX for username error
     const usernameToPost =
       userProfile?.username || userProfile?.email || "User";
 
@@ -1916,7 +1908,6 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
     };
 
     try {
-      // FIX for 'Missing Permissions' error
       const newDocRef = doc(getRequestsCollectionRef(db));
       
       await setDoc(newDocRef, requestData);
@@ -1930,10 +1921,9 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
     }
   };
 
-  // 3. 'Enter to Submit' handler
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault(); // Stop newline
+      e.preventDefault();
       if (formRef.current) {
         formRef.current.dispatchEvent(
           new Event('submit', { cancelable: true, bubbles: true })
@@ -1942,7 +1932,6 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
     }
   };
 
-  // 4. Delete request handler
   const handleDeleteRequest = async (requestId) => {
     if (!window.confirm("Are you sure you want to delete this request?")) {
       return;
@@ -1958,7 +1947,6 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
     }
   };
 
-  // 5. Render the list of requests
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -1993,7 +1981,6 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
                   {new Date(req.timestamp).toLocaleString()}
                 </p>
                 
-                {/* Delete button for Admin or User */}
                 {(authStatus.isAdmin || authStatus.userId === req.userId) && (
                   <button
                     onClick={() => handleDeleteRequest(req.id)}
@@ -2012,7 +1999,6 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
     );
   };
 
-  // 6. The component's JSX
   return (
     <div className="relative w-full min-h-screen pt-32 lg:pt-24">
       <div
@@ -2045,7 +2031,7 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
                   <textarea
                     value={newRequest}
                     onChange={(e) => setNewRequest(e.target.value)}
-                    onKeyDown={handleKeyDown} // 'Enter to Submit'
+                    onKeyDown={handleKeyDown}
                     rows="4"
                     className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500 focus:ring-emerald-500"
                     placeholder="I'd love to see 'The Matrix' translated by Rocky..."
@@ -2068,7 +2054,7 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
                   className={`w-full flex items-center justify-center bg-amber-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-emerald-600/30 ${
                     isPosting ? "opacity-50 cursor-not-allowed" : ""
                   }`}
-                >
+                Next>
                   {isPosting ? (
                     <Hash size={20} className="animate-spin" />
                   ) : (
