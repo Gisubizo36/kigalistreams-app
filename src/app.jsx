@@ -3357,7 +3357,7 @@ function Header({
           </h1>
           <form
             onSubmit={handleSearchSubmit}
-            className="hidden lg:flex flex-grow max-w-xl mx-8"
+            className="hidden lg:flex flex-grow max-w-xl mx-8 min-w-0"
           >
             <input
               type="text"
@@ -4127,7 +4127,7 @@ export default function App() {
           </h1>
           <form
             onSubmit={handleSearchSubmit}
-            className="hidden lg:flex flex-grow max-w-xl mx-8"
+            className="hidden lg:flex flex-grow max-w-xl mx-8 min-w-0"
           >
             <input
               type="text"
