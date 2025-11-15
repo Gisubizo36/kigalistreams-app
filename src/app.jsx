@@ -27,6 +27,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
+import { Browser } from '@capacitor/browser';
 import {
   Eye,
   EyeOff,
@@ -1496,47 +1497,49 @@ const DetailView = ({
       </div>
     );
 
-  const playMovie = (epNumber) => {
-    setMessage("");
-    let externalLink = null;
-    if (item.type === "TV Series" && item.episodes.length > 0) {
-      const ep = item.episodes.find(
-        (e) => Number(e.episodeNumber) === epNumber
-      );
-      if (ep && ep.episodeLink) {
-        externalLink = ep.episodeLink;
-        setCurrentEpisode(epNumber); // Update the current episode state
+    const playMovie = (epNumber) => {
+      setMessage("");
+      let externalLink = null;
+      if (item.type === "TV Series" && item.episodes.length > 0) {
+        const ep = item.episodes.find(
+          (e) => Number(e.episodeNumber) === epNumber
+        );
+        if (ep && ep.episodeLink) {
+          externalLink = ep.episodeLink;
+          setCurrentEpisode(epNumber); // Update the current episode state
+        } else {
+          setMessage("Error: Episode link not found.");
+        }
+      } else if (item.movieLink) {
+        externalLink = item.movieLink;
       } else {
-        setMessage("Error: Episode link not found.");
+        setMessage("Error: Main movie link not found.");
       }
-    } else if (item.movieLink) {
-      externalLink = item.movieLink;
-    } else {
-      setMessage("Error: Main movie link not found.");
-    }
-
-    // --- START OF THE FIX ---
-    if (
-      externalLink && // <-- FIX 1: Checks if the link exists (prevents crash)
-      (externalLink.startsWith("http://") ||
-        externalLink.startsWith("https://"))
-    ) {
-      // This opens the ad in a new tab
-      window.open(
-        "https://otieu.com/4/10173729",
-        "_blank",
-        "noopener,noreferrer"
-      );
-
-      // FIX 2: This changes your *current tab* to the movie link.
-      // This avoids the pop-up blocker.
-      window.location.href = externalLink;
-    } else {
-      // This message will show if the link is missing or not a valid URL
-      setMessage("Error: The provided link is not valid or was not found.");
-    }
-    // --- END OF THE FIX ---
-  };
+  
+      // --- START OF THE FIX ---
+      if (
+        externalLink && // Checks if the link exists
+        (externalLink.startsWith("http://") ||
+          externalLink.startsWith("https://"))
+      ) {
+        // This opens the ad in the default browser, in the background
+        window.open(
+          "https://otieu.com/4/10173729",
+          "_blank",
+          "noopener,noreferrer"
+        );
+  
+        // THIS IS THE NEW PART:
+        // This opens the movie in a new window *on top* of your app.
+        // When the user closes it, they are back in your app.
+        Browser.open({ url: externalLink });
+  
+      } else {
+        // This message will show if the link is missing or not a valid URL
+        setMessage("Error: The provided link is not valid or was not found.");
+      }
+      // --- END OF THE FIX ---
+    };
 
   const playTrailer = () => {
     setMessage("");

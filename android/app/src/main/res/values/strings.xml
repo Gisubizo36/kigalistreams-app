@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">kigalistreams-app</string>
+    <string name="title_activity_main">kigalistreams-app</string>
+    <string name="package_name">lol.kigalistreams.app</string>
+    <string name="custom_url_scheme">lol.kigalistreams.app</string>
+</resources>
