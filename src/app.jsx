@@ -27,7 +27,6 @@ import {
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
-import { Browser } from '@capacitor/browser';
 import {
   Eye,
   EyeOff,
@@ -1518,22 +1517,20 @@ const DetailView = ({
   
       // --- START OF THE FIX ---
       if (
-        externalLink && // Checks if the link exists
+        externalLink && // <-- FIX 1: Checks if the link exists (prevents crash)
         (externalLink.startsWith("http://") ||
           externalLink.startsWith("https://"))
       ) {
-        // This opens the ad in the default browser, in the background
+        // This opens the ad in a new tab
         window.open(
           "https://otieu.com/4/10173729",
           "_blank",
           "noopener,noreferrer"
         );
   
-        // THIS IS THE NEW PART:
-        // This opens the movie in a new window *on top* of your app.
-        // When the user closes it, they are back in your app.
-        Browser.open({ url: externalLink });
-  
+        // FIX 2: This changes your *current tab* to the movie link.
+        // This avoids the pop-up blocker.
+        window.location.href = externalLink;
       } else {
         // This message will show if the link is missing or not a valid URL
         setMessage("Error: The provided link is not valid or was not found.");
