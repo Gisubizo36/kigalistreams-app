@@ -1851,13 +1851,15 @@ const ContactView = ({ navigate }) => (
 
 // --- START: REPLACE YOUR ENTIRE RequestView COMPONENT WITH THIS ---
 
+// --- START: NEW, FIXED RequestView COMPONENT ---
+
 const RequestView = ({ navigate, authStatus, userProfile }) => {
   const [requests, setRequests] = useState([]);
   const [newRequest, setNewRequest] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [isPosting, setIsPosting] = useState(false);
-  const formRef = useRef(null); // <-- For 'Enter to Submit'
+  const formRef = useRef(null); // For 'Enter to Submit'
 
   // 1. Get all existing requests from Firestore
   useEffect(() => {
@@ -1901,7 +1903,7 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
     setIsPosting(true);
     setMessage("");
 
-    // --- FIX for username error ---
+    // FIX for username error
     const usernameToPost =
       userProfile?.username || userProfile?.email || "User";
 
@@ -1914,7 +1916,7 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
     };
 
     try {
-      // --- FIX for 'Missing Permissions' error ---
+      // FIX for 'Missing Permissions' error
       const newDocRef = doc(getRequestsCollectionRef(db));
       
       await setDoc(newDocRef, requestData);
@@ -1928,11 +1930,10 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
     }
   };
 
-  // 3. --- NEW: 'Enter to Submit' handler ---
+  // 3. 'Enter to Submit' handler
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault(); // Stop newline
-      // Manually trigger the form submission
       if (formRef.current) {
         formRef.current.dispatchEvent(
           new Event('submit', { cancelable: true, bubbles: true })
@@ -1941,7 +1942,7 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
     }
   };
 
-  // 4. --- NEW: Delete request handler ---
+  // 4. Delete request handler
   const handleDeleteRequest = async (requestId) => {
     if (!window.confirm("Are you sure you want to delete this request?")) {
       return;
@@ -1950,12 +1951,14 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
       const docRef = doc(getRequestsCollectionRef(db), requestId);
       await deleteDoc(docRef);
       setMessage("Success: Request deleted.");
-    } catch (error) {
+    } catch (error)
+ {
       console.error("Error deleting request:", error);
       setMessage(`Error: Could not delete request. ${error.message}`);
     }
   };
 
+  // 5. Render the list of requests
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -1990,7 +1993,7 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
                   {new Date(req.timestamp).toLocaleString()}
                 </p>
                 
-                {/* --- NEW: Delete button for Admin or User --- */}
+                {/* Delete button for Admin or User */}
                 {(authStatus.isAdmin || authStatus.userId === req.userId) && (
                   <button
                     onClick={() => handleDeleteRequest(req.id)}
@@ -2009,6 +2012,7 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
     );
   };
 
+  // 6. The component's JSX
   return (
     <div className="relative w-full min-h-screen pt-32 lg:pt-24">
       <div
@@ -2024,7 +2028,6 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
             See what others have requested or add your own.
           </p>
 
-          {/* --- REQUEST LIST --- */}
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-white mb-4">
               Community Requests
@@ -2032,7 +2035,6 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
             {renderContent()}
           </div>
 
-          {/* --- POSTING FORM --- */}
           <div className="border-t border-gray-700 pt-6">
             {authStatus.user && !authStatus.user.isAnonymous ? (
               <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
@@ -2043,7 +2045,7 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
                   <textarea
                     value={newRequest}
                     onChange={(e) => setNewRequest(e.target.value)}
-                    onKeyDown={handleKeyDown} // <-- 'Enter to Submit'
+                    onKeyDown={handleKeyDown} // 'Enter to Submit'
                     rows="4"
                     className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500 focus:ring-emerald-500"
                     placeholder="I'd love to see 'The Matrix' translated by Rocky..."
@@ -2093,6 +2095,7 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
     </div>
   );
 };
+
 // --- END: OF RequestView REPLACEMENT ---
     return () => unsubscribe();
   }, [db]);
