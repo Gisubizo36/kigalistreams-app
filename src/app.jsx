@@ -539,7 +539,7 @@ const Card = (
   { item, onClick, onWatchLaterToggle, isWatchLater } // 1. Added props back
 ) => (
   <div
-  className="relative group rounded-lg border border-gray-700/50 overflow-hidden transform transition duration-300 hover:scale-[1.03] cursor-pointer hover:shadow-lg hover:shadow-amber-500/30 hover:border-amber-500/50"
+    className="relative group rounded-lg border border-gray-700/50 overflow-hidden transform transition duration-300 hover:scale-[1.03] cursor-pointer hover:shadow-lg hover:shadow-amber-500/30 hover:border-amber-500/50"
     style={{ viewTransitionName: `card-${item.id}` }}
     onClick={() => onClick("detail", item.id)} // Click on whole card
   >
@@ -1343,7 +1343,7 @@ const HomeView = ({
             watchLaterIds={watchLaterIds}
             viewAllPath="allcontent"
             isLoading={isContentLoading}
-         />
+          />
           {/* --- "Recently Added" is second --- */}
           <Section
             title="Recently Added"
@@ -1496,47 +1496,47 @@ const DetailView = ({
       </div>
     );
 
-    const playMovie = (epNumber) => {
-      setMessage("");
-      let externalLink = null;
-      if (item.type === "TV Series" && item.episodes.length > 0) {
-        const ep = item.episodes.find(
-          (e) => Number(e.episodeNumber) === epNumber
-        );
-        if (ep && ep.episodeLink) {
-          externalLink = ep.episodeLink;
-          setCurrentEpisode(epNumber); // Update the current episode state
-        } else {
-          setMessage("Error: Episode link not found.");
-        }
-      } else if (item.movieLink) {
-        externalLink = item.movieLink;
+  const playMovie = (epNumber) => {
+    setMessage("");
+    let externalLink = null;
+    if (item.type === "TV Series" && item.episodes.length > 0) {
+      const ep = item.episodes.find(
+        (e) => Number(e.episodeNumber) === epNumber
+      );
+      if (ep && ep.episodeLink) {
+        externalLink = ep.episodeLink;
+        setCurrentEpisode(epNumber); // Update the current episode state
       } else {
-        setMessage("Error: Main movie link not found.");
+        setMessage("Error: Episode link not found.");
       }
-  
-      // --- START OF THE FIX ---
-      if (
-        externalLink && // <-- FIX 1: Checks if the link exists (prevents crash)
-        (externalLink.startsWith("http://") ||
-          externalLink.startsWith("https://"))
-      ) {
-        // This opens the ad in a new tab
-        window.open(
-          "https://otieu.com/4/10173729",
-          "_blank",
-          "noopener,noreferrer"
-        );
-  
-        // FIX 2: This changes your *current tab* to the movie link.
-        // This avoids the pop-up blocker.
-        window.location.href = externalLink;
-      } else {
-        // This message will show if the link is missing or not a valid URL
-        setMessage("Error: The provided link is not valid or was not found.");
-      }
-      // --- END OF THE FIX ---
-    };
+    } else if (item.movieLink) {
+      externalLink = item.movieLink;
+    } else {
+      setMessage("Error: Main movie link not found.");
+    }
+
+    // --- START OF THE FIX ---
+    if (
+      externalLink && // <-- FIX 1: Checks if the link exists (prevents crash)
+      (externalLink.startsWith("http://") ||
+        externalLink.startsWith("https://"))
+    ) {
+      // This opens the ad in a new tab
+      window.open(
+        "https://otieu.com/4/10173729",
+        "_blank",
+        "noopener,noreferrer"
+      );
+
+      // FIX 2: This changes your *current tab* to the movie link.
+      // This avoids the pop-up blocker.
+      window.location.href = externalLink;
+    } else {
+      // This message will show if the link is missing or not a valid URL
+      setMessage("Error: The provided link is not valid or was not found.");
+    }
+    // --- END OF THE FIX ---
+  };
 
   const playTrailer = () => {
     setMessage("");
@@ -1604,8 +1604,8 @@ const DetailView = ({
                 className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm transition-all duration-300 hover:bg-black/50"
                 aria-label="Play Trailer"
               >
-              {/* --- START: YOUTUBE-STYLE BUTTON --- */}
-              <div className="w-20 h-14 bg-red-600/90 rounded-xl flex items-center justify-center shadow-lg transition-all duration-300 hover:bg-red-700 hover:scale-110 group">
+                {/* --- START: YOUTUBE-STYLE BUTTON --- */}
+                <div className="w-20 h-14 bg-red-600/90 rounded-xl flex items-center justify-center shadow-lg transition-all duration-300 hover:bg-red-700 hover:scale-110 group">
                   <Play
                     size={40}
                     className="text-white transition-transform group-hover:scale-105"
@@ -1859,10 +1859,7 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
   useEffect(() => {
     if (!db) return;
     setIsLoading(true);
-    const q = query(
-      getRequestsCollectionRef(db),
-      orderBy("timestamp", "desc")
-    );
+    const q = query(getRequestsCollectionRef(db), orderBy("timestamp", "desc"));
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
@@ -1909,7 +1906,7 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
 
     try {
       const newDocRef = doc(getRequestsCollectionRef(db));
-      
+
       await setDoc(newDocRef, requestData);
       setNewRequest("");
       setMessage("Success! Your request has been posted.");
@@ -1922,11 +1919,11 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       if (formRef.current) {
         formRef.current.dispatchEvent(
-          new Event('submit', { cancelable: true, bubbles: true })
+          new Event("submit", { cancelable: true, bubbles: true })
         );
       }
     }
@@ -1938,8 +1935,7 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
       const docRef = doc(getRequestsCollectionRef(db), requestId);
       await deleteDoc(docRef);
       setMessage("Success: Request deleted.");
-    } catch (error)
- {
+    } catch (error) {
       console.error("Error deleting request:", error);
       setMessage(`Error: Could not delete request. ${error.message}`);
     }
@@ -1978,7 +1974,7 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
                 <p className="text-gray-500 text-xs">
                   {new Date(req.timestamp).toLocaleString()}
                 </p>
-                
+
                 {(authStatus.isAdmin || authStatus.userId === req.userId) && (
                   <button
                     onClick={() => handleDeleteRequest(req.id)}
@@ -2052,7 +2048,8 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
                   className={`w-full flex items-center justify-center bg-amber-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-emerald-600/30 ${
                     isPosting ? "opacity-50 cursor-not-allowed" : ""
                   }`}
-                Next>
+                  Next
+                >
                   {isPosting ? (
                     <Hash size={20} className="animate-spin" />
                   ) : (
@@ -2079,7 +2076,6 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
     </div>
   );
 };
-
 
 // --- START: NEW WATCH LATER VIEW ---
 // Paste this after your RequestView component
@@ -2204,7 +2200,8 @@ const TranslatedFilmsView = ({
           </div>
         ) : (
           <p className="text-gray-400 text-center py-10">
-            No translated content found{selectedTranslator ? ` for "${selectedTranslator}"` : ""}.
+            No translated content found
+            {selectedTranslator ? ` for "${selectedTranslator}"` : ""}.
           </p>
         )}
       </div>
@@ -3674,13 +3671,13 @@ function Header({
           view === "home" && !isScrolled
             ? "bg-transparent"
             : theme === "dark"
-            ? "bg-gray-800"
+            ? "bg-black"
             : "bg-white"
         }`}
       >
         <div className="container mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           <h1
-          className={`text-2xl font-black text-amber-500 cursor-pointer flex-shrink-0`}
+            className={`text-2xl font-black text-amber-500 cursor-pointer flex-shrink-0`}
             onClick={() => navigate("home")}
           >
             KIGALISTREAMS
@@ -3940,7 +3937,7 @@ function Header({
           isMenuOpen ? "translate-x-0" : "translate-x-full"
         } ${
           theme === "dark"
-            ? "bg-gray-900 border-l border-gray-700"
+            ? "bg-black border-l border-gray-700"
             : "bg-white border-l border-gray-200"
         } lg:hidden`}
       >
@@ -3990,7 +3987,7 @@ function Header({
             ))}
 
             <a
-              href="/kigalistreams.apk"
+              href="https://github.com/Gisubizo36/kigalistreams-app/releases/download/v1.0/app-release.apk"
               download
               onClick={() => setIsMenuOpen(false)}
               className={`block w-full text-left p-3 rounded-lg text-lg font-medium transition-colors bg-green-600 text-white hover:bg-green-700 flex items-center`}
@@ -4113,7 +4110,19 @@ export default function App() {
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
-
+  useEffect(() => {
+    if (isMenuOpen) {
+      // This stops the body from scrolling
+      document.body.style.overflow = "hidden";
+    } else {
+      // This allows the body to scroll again
+      document.body.style.overflow = "";
+    }
+    // Cleanup function to be safe
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMenuOpen]);
   const firebaseLogout = useCallback(() => {
     if (auth) {
       signOut(auth)
@@ -4446,16 +4455,16 @@ export default function App() {
         /* --- END OF NEW CLASS --- */
      
       `}</style>
-     <header
+      <header
         ref={headerRef}
         className={`fixed top-0 left-0 right-0 z-30 shadow-lg transition-colors duration-300 ${
           // Add the background colors back based on the theme
-          theme === "dark" ? "bg-gray-800" : "bg-white"
+          theme === "dark" ? "bg-black" : "bg-white"
         }`}
       >
         <div className="container mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           <h1
-          className={`text-2xl font-black text-amber-500 cursor-pointer flex-shrink-0`}
+            className={`text-2xl font-black text-amber-500 cursor-pointer flex-shrink-0`}
             onClick={() => navigate("home")}
           >
             KIGALISTREAMS
@@ -4538,9 +4547,7 @@ export default function App() {
             <div className="hidden lg:relative lg:block group">
               <button
                 className={`flex items-center p-2 rounded-lg transition-colors ${
-                  theme === "dark"
-                    ? "hover:bg-gray-700"
-                    : "hover:bg-gray-200"
+                  theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"
                 }`}
               >
                 Genres <ChevronDown size={18} className="ml-1" />
@@ -4656,9 +4663,7 @@ export default function App() {
             <button
               onClick={() => navigate("contact")}
               className={`hidden sm:block p-2 rounded-lg transition-colors ${
-                theme === "dark"
-                  ? "hover:bg-gray-700"
-                  : "hover:bg-gray-200"
+                theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"
               }`}
             >
               Contact Us
@@ -4676,9 +4681,7 @@ export default function App() {
             </button>
             <button
               className={`lg:hidden p-2 rounded-lg transition-colors ${
-                theme === "dark"
-                  ? "hover:bg-gray-700"
-                  : "hover:bg-gray-200"
+                theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"
               }`}
               onClick={() => setIsMenuOpen(true)}
               title="Open Menu"
@@ -4724,7 +4727,7 @@ export default function App() {
           isMenuOpen ? "translate-x-0" : "translate-x-full"
         } ${
           theme === "dark"
-            ? "bg-gray-900 border-l border-gray-700"
+            ? "bg-black border-l border-gray-700"
             : "bg-white border-l border-gray-200"
         } lg:hidden`}
       >
@@ -4775,7 +4778,7 @@ export default function App() {
             ))}
 
             <a
-              href="/kigalistreams.apk"
+              href="https://github.com/Gisubizo36/kigalistreams-app/releases/download/v1.0/app-release.apk"
               download
               onClick={() => setIsMenuOpen(false)}
               className={`block w-full text-left p-3 rounded-lg text-lg font-medium transition-colors bg-green-600 text-white hover:bg-green-700 flex items-center`}
