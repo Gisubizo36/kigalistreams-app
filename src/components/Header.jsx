@@ -31,6 +31,22 @@ function Header({
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef(null);
   const headerRef = useRef(null);
+  useEffect(() => {
+    if (isMenuOpen) {
+      // Apply to both <html> and <body> for mobile browsers
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+    } else {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    }
+    // Cleanup
+    return () => {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    };
+  }, [isMenuOpen]); // This runs every time isMenuOpen changes
+  // --- END OF NEW CODE BLOCK ---
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -391,7 +407,7 @@ function Header({
             ))}
 
             <a
-              href="https://github.com/Gisubizo36/kigalistreams-app/releases/download/v1.0/app-release.apk"
+            href="https://github.com/gisaiconfii-boop/kigalistreams-appFILES-APK/releases/download/v1.0/app-release.apk"
               download
               onClick={() => setIsMenuOpen(false)}
               className={`block w-full text-left p-3 rounded-lg text-lg font-medium transition-colors bg-green-600 text-white hover:bg-green-700 flex items-center`}
