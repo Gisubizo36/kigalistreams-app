@@ -23,12 +23,12 @@ const VideoPlayer = ({
     return (
       <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl">
         <iframe
-          // --- FIX: autoplay=0 PREVENTS AUTO-START ---
-          src={`${youtubeEmbedUrl}?autoplay=0`}
-          // -----------------------------------------
+          // --- FIX 2: Set autoplay=1 so it plays immediately when Component mounts ---
+          src={`${youtubeEmbedUrl}?autoplay=1`} 
+          // ---------------------------------------------------------------------------
           title={title}
           frameBorder="0"
-          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
           className="w-full h-full"
         ></iframe>

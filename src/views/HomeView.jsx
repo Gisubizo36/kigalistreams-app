@@ -35,15 +35,9 @@ const HomeView = ({
     [sortedContent]
   );
 
-  // --- FIX: Shuffle Hero Items ---
   const heroItems = useMemo(() => {
-    // Mix trending and sorted content
-    const items = [...trendingItems, ...sortedContent];
-    
-    // Shuffle logic to ensure "New Cards" appear randomly
-    const shuffled = items.sort(() => 0.5 - Math.random());
-    
-    const baseItems = shuffled.slice(0, 24); // Grab 24 random items
+    const items = trendingItems.length > 0 ? trendingItems : sortedContent;
+    const baseItems = items.slice(0, 8);
     if (baseItems.length === 0) return [];
 
     let duplicatedItems = [...baseItems];
@@ -52,22 +46,20 @@ const HomeView = ({
     }
     return duplicatedItems;
   }, [trendingItems, sortedContent]);
-  // -------------------------------
 
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
 
-  // --- FIX: Shuffle Mobile Hero Items ---
+  // --- FIX 4: Increased slice to 24 to allow rotation ---
   const baseHeroItems = useMemo(() => {
-    const items = [...trendingItems, ...sortedContent];
-    const shuffled = items.sort(() => 0.5 - Math.random());
-    
-    // Get 24 random items to rotate through
-    const baseItems = shuffled.slice(0, 24);
-    
-    if (baseItems.length === 0) return [];
-    return baseItems;
+    const items = trendingItems.length > 0 ? trendingItems : sortedContent;
+    // Ensure we have enough items to rotate. If < 24, duplicate them.
+    let pool = [...items];
+    while (pool.length < 24 && items.length > 0) {
+      pool = [...pool, ...items];
+    }
+    return pool.slice(0, 24); 
   }, [trendingItems, sortedContent]);
-  // --------------------------------------
+  // ------------------------------------------------------
 
   const [currentCardGroupIndex, setCurrentCardGroupIndex] = useState(0);
   const [internalRotationIndex, setInternalRotationIndex] = useState(0);
@@ -99,6 +91,7 @@ const HomeView = ({
     }
   }, [currentCardGroupIndex, baseHeroItems, internalRotationIndex]);
 
+  console.log("HERO ITEMS FOR STACK:", heroItemsForStack);
   useEffect(() => {
     if (baseHeroItems.length <= 1) return;
 
@@ -119,7 +112,7 @@ const HomeView = ({
         setInternalRotationIndex(0);
         setIsFading(false);
       }, 500);
-    }, 15 * 60 * 1000); // 15 minutes
+    }, 15 * 60 * 1000);
 
     return () => clearInterval(groupInterval);
   }, [totalGroups]);
