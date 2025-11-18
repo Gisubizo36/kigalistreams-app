@@ -11,11 +11,8 @@ import { getInitialView, getInitialId, Genres } from "./utils.js";
 import { useAdminPassword } from "./hooks/useAdminPassword.js";
 import { useAppState } from "./hooks/useAppState.js";
 
-// Import Components
 import Header from "./components/Header.jsx";
 import Card from "./components/Card.jsx";
-
-// Import Views
 import HomeView from "./views/HomeView.jsx";
 import DetailView from "./views/DetailView.jsx";
 import ContactView from "./views/ContactView.jsx";
@@ -25,7 +22,6 @@ import LoginView from "./views/LoginView.jsx";
 import WatchLaterView from "./views/WatchLaterView.jsx";
 import TranslatedFilmsView from "./views/TranslatedFilmsView.jsx";
 
-// 4. Main App & Router
 export default function App() {
   const [adminPassword, updateAdminPassword] = useAdminPassword();
 
@@ -65,6 +61,16 @@ export default function App() {
   }, []);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // --- FIX: PREVENT WEB INSTALL NOTIFICATION ---
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault(); // Blocks the "Install App" banner/modal
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+  // --------------------------------------------
 
   const navigate = useCallback((newView, id = null) => {
     if (document.startViewTransition) {
@@ -211,7 +217,6 @@ export default function App() {
       );
     }
     
-    // Fallback for allcontent, search, and genre
     if (view === "search" || view === "genre" || view === "allcontent") {
       const title =
         view === "allcontent"
@@ -228,7 +233,7 @@ export default function App() {
           <div className="relative z-10 container mx-auto py-8 px-4 sm:px-6">
             <h1 className="text-3xl font-bold text-white mb-6">{title}</h1>
 
-            {/* --- CHANGED: LIST VIEW FOR SEARCH, GRID FOR OTHERS --- */}
+            {/* --- FIX: LIST VIEW FOR SEARCH, GRID FOR OTHERS --- */}
             {view === "search" ? (
               <div className="space-y-3">
                 {filteredContent.map((item) => (
@@ -275,8 +280,7 @@ export default function App() {
                 ))}
               </div>
             )}
-            {/* ------------------------------------------------------- */}
-
+            
             {filteredContent.length === 0 && (
               <p className="text-gray-400 text-center py-10">
                 No results found.
@@ -287,7 +291,6 @@ export default function App() {
       );
     }
     
-    // Default to HomeView
     return (
       <HomeView
         content={content}
@@ -298,33 +301,7 @@ export default function App() {
         isContentLoading={isContentLoading}
       />
     );
-  }, [
-    view,
-    currentId,
-    content,
-    continueWatching,
-    watchLater,
-    saveUserProgress,
-    toggleWatchLater,
-    authStatus,
-    isContentLoading,
-    adminPassword,
-    updateAdminPassword,
-    translators,
-    isLoadingTranslators,
-    addTranslator,
-    removeTranslator,
-    editTranslator,
-    firebaseLogout,
-    adminTab,
-    setPersistentAdminTab,
-    selectedTranslator,
-    filteredContent,
-    searchQuery,
-    selectedGenre,
-    navigate,
-    isAdmin,
-  ]);
+  }, [view, currentId, content, continueWatching, watchLater, saveUserProgress, toggleWatchLater, authStatus, isContentLoading, adminPassword, updateAdminPassword, translators, isLoadingTranslators, addTranslator, removeTranslator, editTranslator, firebaseLogout, adminTab, setPersistentAdminTab, selectedTranslator, filteredContent, searchQuery, selectedGenre, navigate, isAdmin]);
 
   useEffect(() => {
     document.body.className =
@@ -339,58 +316,18 @@ export default function App() {
   }, [theme, view]);
 
   return (
-    <div
-      className={`min-h-screen ${
-        theme === "dark"
-          ? "bg-neutral-900 text-gray-100"
-          : "bg-gray-100 text-gray-900"
-      }`}
-    >
+    <div className={`min-h-screen ${theme === "dark" ? "bg-neutral-900 text-gray-100" : "bg-gray-100 text-gray-900"}`}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         .font-inter { font-family: 'Inter', sans-serif; }
-        
-        body.view-home header[data-scrolled="false"] {
-          background-color: transparent;
-        }
-
-        body {
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
-        
-        body::-webkit-scrollbar {
-          display: none;
-          width: 0;
-          height: 0;
-        }
-        
-        .custom-scrollbar {
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar {
-          display: none;
-          width: 0;
-          height: 0;
-        }
-        
-        body { transition: background-color 0.3s, color 0.3s; }
-        
-        @keyframes scroll {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .animate-scroll {
-          animation: scroll 30s linear infinite;
-        }
-
-        .performant-bg {
-          background-color: #000000;
-          transform: scale(1.05);
-        }
-
+        body.view-home header[data-scrolled="false"] { background-color: transparent; }
+        body { scrollbar-width: none; -ms-overflow-style: none; transition: background-color 0.3s, color 0.3s; }
+        body::-webkit-scrollbar { display: none; width: 0; height: 0; }
+        .custom-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+        .custom-scrollbar::-webkit-scrollbar { display: none; width: 0; height: 0; }
+        @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .animate-scroll { animation: scroll 30s linear infinite; }
+        .performant-bg { background-color: #000000; transform: scale(1.05); }
         @media (min-width: 1024px) {
           .performant-bg {
             background-image: url(https://images.pexels.com/photos/65437/pexels-photo-65437.jpeg);
@@ -414,7 +351,6 @@ export default function App() {
         setSelectedGenre={setSelectedGenre}
         selectedGenre={selectedGenre}
       />
-      
       {currentViewElement}
     </div>
   );
