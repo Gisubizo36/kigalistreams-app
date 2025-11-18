@@ -227,17 +227,56 @@ export default function App() {
           ></div>
           <div className="relative z-10 container mx-auto py-8 px-4 sm:px-6">
             <h1 className="text-3xl font-bold text-white mb-6">{title}</h1>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-              {filteredContent.map((item) => (
-                <Card
-                  key={item.id}
-                  item={item}
-                  onClick={navigate}
-                  onWatchLaterToggle={toggleWatchLater}
-                  isWatchLater={watchLater.includes(item.id)}
-                />
-              ))}
-            </div>
+
+            {/* --- CHANGED: LIST VIEW FOR SEARCH, GRID FOR OTHERS --- */}
+            {view === "search" ? (
+              <div className="space-y-3">
+                {filteredContent.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => navigate("detail", item.id)}
+                    className="flex items-center bg-gray-900 border border-gray-800 p-3 rounded-lg cursor-pointer active:bg-gray-800 transition"
+                  >
+                    <img
+                      src={item.thumbnail}
+                      alt={item.title}
+                      className="w-16 h-24 object-cover rounded-md flex-shrink-0 bg-gray-800"
+                    />
+                    <div className="ml-4 flex-1 min-w-0">
+                      <h3 className="text-white font-bold text-lg truncate">
+                        {item.title}
+                      </h3>
+                      <div className="flex items-center text-sm text-gray-400 mt-1">
+                        <span className="bg-gray-800 px-2 py-0.5 rounded text-xs mr-2 border border-gray-700">
+                          {item.type}
+                        </span>
+                        {item.year && <span>{item.year}</span>}
+                      </div>
+                      {item.translator && (
+                        <p className="text-emerald-500 text-xs font-bold mt-1">
+                          BY {item.translator}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              /* Grid View for Genre and AllContent */
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                {filteredContent.map((item) => (
+                  <Card
+                    key={item.id}
+                    item={item}
+                    onClick={navigate}
+                    onWatchLaterToggle={toggleWatchLater}
+                    isWatchLater={watchLater.includes(item.id)}
+                  />
+                ))}
+              </div>
+            )}
+            {/* ------------------------------------------------------- */}
+
             {filteredContent.length === 0 && (
               <p className="text-gray-400 text-center py-10">
                 No results found.

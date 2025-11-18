@@ -35,7 +35,16 @@ const DetailView = ({
   const [currentPlaybackTime, setCurrentPlaybackTime] = useState(initialTime);
   const [message, setMessage] = useState("");
 
+  // --- FIX: LOAD TRAILER AUTOMATICALLY IF AVAILABLE ---
   const initialVideo = useMemo(() => {
+    if (item && item.trailerLink) {
+      return {
+        link: item.trailerLink,
+        title: `${item.title} Trailer`,
+        isTrailer: true,
+        subtitleUrl: null,
+      };
+    }
     return {
       link: null,
       title: "No Video Selected",
@@ -43,6 +52,7 @@ const DetailView = ({
       subtitleUrl: null,
     };
   }, [item]);
+  // ---------------------------------------------------
 
   const [currentVideo, setCurrentVideo] = useState(initialVideo);
   const watchLaterIds = watchLater;
