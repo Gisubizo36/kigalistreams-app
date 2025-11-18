@@ -6,18 +6,19 @@ import CardPlaceholder from "./CardPlaceholder.jsx";
 const Section = ({
   title,
   items,
-  onCardClick,
+  onCardClick, // This is the navigate function
   onWatchLaterToggle,
   watchLaterIds,
-  viewAllPath = null,
-  isLoading = false,
+  viewAllPath = null, // This will be "allcontent"
+  isLoading = false, // <-- Prop is included
 }) => {
+  // --- 1. SCROLL LOGIC ---
   const scrollContainerRef = useRef(null);
 
   const handleScroll = (direction) => {
     if (scrollContainerRef.current) {
       const { clientWidth } = scrollContainerRef.current;
-      const scrollAmount = clientWidth * 0.8;
+      const scrollAmount = clientWidth * 0.8; // Scroll by 80% of visible width
 
       if (direction === "left") {
         scrollContainerRef.current.scrollBy({
@@ -32,11 +33,14 @@ const Section = ({
       }
     }
   };
+  // --- END OF SCROLL LOGIC ---
 
   return (
     <section className="mb-8">
+      {/* --- 2. HEADER WITH ARROWS --- */}
       <div className="flex justify-between items-center mb-4 px-4 sm:px-6">
         <h2 className="text-2xl font-bold text-gray-100">{title}</h2>
+
         <div className="flex space-x-2">
           <button
             onClick={() => handleScroll("left")}
@@ -55,15 +59,22 @@ const Section = ({
         </div>
       </div>
 
+      {/* --- 3. SCROLLING CONTAINER --- */}
       <div
         ref={scrollContainerRef}
         className="flex overflow-x-auto pb-4 px-4 sm:px-6 space-x-4 custom-scrollbar"
       >
+        {/* --- START: CORRECTED LOGIC BLOCK --- */}
         {isLoading ? (
+          // 1. Show 6 placeholders while loading
           [...Array(6)].map((_, index) => <CardPlaceholder key={index} />)
         ) : items.length === 0 ? (
-          <p className="text-gray-400">No content available.</p>
+          // 2. Show "No content" message if not loading and no items
+          <p className="text-gray-400">
+            No content available in this section yet.
+          </p>
         ) : (
+          // 3. Show the actual content cards
           items.map((item) => (
             <div
               key={item.id}
@@ -75,14 +86,14 @@ const Section = ({
                 onWatchLaterToggle={onWatchLaterToggle}
                 isWatchLater={watchLaterIds.includes(item.id)}
               />
+
               <div className="mt-3">
                 <h3 className="text-white text-base font-semibold truncate">
                   {item.title}
                 </h3>
-                {/* --- CHANGE APPLIED HERE --- */}
                 {item.translator && (
-                  <p className="text-emerald-400 text-xs font-bold truncate mt-1">
-                    BY {item.translator}
+                  <p className="text-emerald-400 text-xs font-medium truncate mt-1">
+                    By: {item.translator}
                   </p>
                 )}
                 <div className="flex justify-between items-center text-xs text-gray-400 mt-1">
@@ -99,6 +110,7 @@ const Section = ({
                   ) : (
                     <p className="font-medium truncate">&nbsp;</p>
                   )}
+
                   <span className="font-medium border border-gray-600 px-1.5 py-0.5 rounded flex-shrink-0">
                     {item.type === "TV Series" ? "TV" : "Movie"}
                   </span>
@@ -107,6 +119,9 @@ const Section = ({
             </div>
           ))
         )}
+        {/* --- END: CORRECTED LOGIC BLOCK --- */}
+
+        {/* --- 4. "VIEW ALL" BUTTON AT THE END OF THE LIST --- */}
         {viewAllPath && items.length > 0 && (
           <div className="min-w-[150px] w-[150px] sm:min-w-[180px] sm:w-[180px] flex-shrink-0 flex flex-col items-center justify-center">
             <button
