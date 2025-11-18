@@ -404,7 +404,7 @@ function Header({
               </button>
             ))}
 
-            {/* --- FIX 3: New APK Link --- */}
+            {/* --- FIX: Updated APK Download Link --- */}
             <a
               href="https://github.com/gisaiconfii-boop/kigalistreams-appFILES-APK/releases/download/v1.0/Kstreams.apk"
               download

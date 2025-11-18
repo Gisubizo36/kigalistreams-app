@@ -35,16 +35,24 @@ const DetailView = ({
   const [currentPlaybackTime, setCurrentPlaybackTime] = useState(initialTime);
   const [message, setMessage] = useState("");
 
-  // --- FIX 1: Start with NO video (shows the Image Thumbnail first) ---
+  // --- FIX: LOAD TRAILER AUTOMATICALLY IF AVAILABLE ---
   const initialVideo = useMemo(() => {
+    if (item && item.trailerLink) {
+      return {
+        link: item.trailerLink,
+        title: `${item.title} Trailer`,
+        isTrailer: true,
+        subtitleUrl: null,
+      };
+    }
     return {
-      link: null, // Kept null to ensure Image loads first
+      link: null,
       title: "No Video Selected",
       isTrailer: false,
       subtitleUrl: null,
     };
   }, [item]);
-  // ------------------------------------------------------------------
+  // ---------------------------------------------------
 
   const [currentVideo, setCurrentVideo] = useState(initialVideo);
   const watchLaterIds = watchLater;
@@ -170,8 +178,6 @@ const DetailView = ({
         >
           <ArrowLeft size={20} className="mr-1" /> Back to Home
         </button>
-        
-        {/* If link exists, load VideoPlayer. If not, load Thumbnail Image */}
         {currentVideo.link ? (
           <VideoPlayer
             key={currentVideo.link}
