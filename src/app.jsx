@@ -66,6 +66,18 @@ export default function App() {
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  // --- NEW: PREVENT PWA INSTALL PROMPT ---
+  useEffect(() => {
+    const handler = (e) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      console.log("PWA Install prompt suppressed");
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+  // ---------------------------------------
+
   const navigate = useCallback((newView, id = null) => {
     if (document.startViewTransition) {
       document.startViewTransition(() => {
@@ -121,12 +133,14 @@ export default function App() {
     }
     if (searchQuery) {
       const queryLower = searchQuery.toLowerCase();
-      results = results.filter(
-        (item) =>
-          item.title.toLowerCase().includes(queryLower) ||
-          item.genre.some((g) => g.toLowerCase().includes(queryLower)) ||
-          item.description.toLowerCase().includes(queryLower)
-      );
+      // --- CHANGED: SEARCH LOGIC (TITLE & INTERPRETER ONLY) ---
+      results = results.filter((item) => {
+        const matchesTitle = item.title.toLowerCase().includes(queryLower);
+        const matchesTranslator =
+          item.translator && item.translator.toLowerCase().includes(queryLower);
+        return matchesTitle || matchesTranslator;
+      });
+      // --------------------------------------------------------
     }
     return results;
   }, [content, searchQuery, selectedGenre]);
@@ -210,7 +224,7 @@ export default function App() {
         />
       );
     }
-    
+
     // Fallback for allcontent, search, and genre
     if (view === "search" || view === "genre" || view === "allcontent") {
       const title =
@@ -228,7 +242,6 @@ export default function App() {
           <div className="relative z-10 container mx-auto py-8 px-4 sm:px-6">
             <h1 className="text-3xl font-bold text-white mb-6">{title}</h1>
 
-            {/* --- CHANGED: LIST VIEW FOR SEARCH, GRID FOR OTHERS --- */}
             {view === "search" ? (
               <div className="space-y-3">
                 {filteredContent.map((item) => (
@@ -275,7 +288,6 @@ export default function App() {
                 ))}
               </div>
             )}
-            {/* ------------------------------------------------------- */}
 
             {filteredContent.length === 0 && (
               <p className="text-gray-400 text-center py-10">
@@ -286,7 +298,7 @@ export default function App() {
         </div>
       );
     }
-    
+
     // Default to HomeView
     return (
       <HomeView
@@ -400,7 +412,7 @@ export default function App() {
           }
         }
       `}</style>
-      
+
       <Header
         view={view}
         theme={theme}
@@ -414,7 +426,7 @@ export default function App() {
         setSelectedGenre={setSelectedGenre}
         selectedGenre={selectedGenre}
       />
-      
+
       {currentViewElement}
     </div>
   );
