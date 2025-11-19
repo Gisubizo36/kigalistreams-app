@@ -35,7 +35,6 @@ const DetailView = ({
   const [currentPlaybackTime, setCurrentPlaybackTime] = useState(initialTime);
   const [message, setMessage] = useState("");
 
-  // --- FIX: LOAD TRAILER AUTOMATICALLY IF AVAILABLE ---
   const initialVideo = useMemo(() => {
     if (item && item.trailerLink) {
       return {
@@ -52,7 +51,6 @@ const DetailView = ({
       subtitleUrl: null,
     };
   }, [item]);
-  // ---------------------------------------------------
 
   const [currentVideo, setCurrentVideo] = useState(initialVideo);
   const watchLaterIds = watchLater;
@@ -254,7 +252,7 @@ const DetailView = ({
               <p
                 className={`text-lg text-emerald-400 font-semibold mb-2 flex items-center`}
               >
-                <BookOpen size={20} className="mr-2" /> Translated by:{" "}
+                <BookOpen size={20} className="mr-2" /> Interpreted by:{" "}
                 {item.translator}
               </p>
             )}

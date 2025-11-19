@@ -26,13 +26,31 @@ const WatchLaterView = ({
         {watchLaterItems.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
             {watchLaterItems.map((item) => (
-              <Card
-                key={item.id}
-                item={item}
-                onClick={navigate}
-                onWatchLaterToggle={toggleWatchLater}
-                isWatchLater={true} // It's always true on this page
-              />
+              <div key={item.id}>
+                <Card
+                  item={item}
+                  onClick={navigate}
+                  onWatchLaterToggle={toggleWatchLater}
+                  isWatchLater={true}
+                />
+                {/* --- ADDED: Text & Metadata below Card --- */}
+                <div className="mt-3">
+                  <h3 className="text-white text-base font-semibold truncate">
+                    {item.title}
+                  </h3>
+                  {item.translator && (
+                    <p className="text-emerald-400 text-xs font-bold truncate mt-1">
+                      INTERPRETED BY {item.translator}
+                    </p>
+                  )}
+                  <div className="flex justify-between items-center text-xs text-gray-400 mt-1">
+                    <span className="font-medium border border-gray-600 px-1.5 py-0.5 rounded flex-shrink-0">
+                      {item.type === "TV Series" ? "TV" : "Movie"}
+                    </span>
+                  </div>
+                </div>
+                {/* ----------------------------------------- */}
+              </div>
             ))}
           </div>
         ) : (

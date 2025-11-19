@@ -74,7 +74,7 @@ const ContentUploader = ({
           prev.length > 0 ? prev[prev.length - 1].episodeNumber + 1 : 1,
         episodeTitle: `Episode ${prev.length + 1}`,
         episodeLink: "",
-        subtitleLink: "",
+        downloadLink: "", // Changed from subtitleLink to downloadLink
       },
     ]);
   }, []);
@@ -285,10 +285,6 @@ const ContentUploader = ({
           className={`w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500 focus:ring-emerald-500`}
           placeholder="https://example.com/widescreen_image.jpg"
         />
-        <p className="text-xs text-gray-400 mt-1">
-          Optional: A high-quality widescreen (16:9) image for the mobile hero
-          slider.
-        </p>
       </div>
       <div>
         <label className="block text-gray-300 mb-2 font-semibold">
@@ -329,7 +325,7 @@ const ContentUploader = ({
         </div>
         <div>
           <label className="block text-gray-300 mb-2 font-semibold">
-            Assign Translator
+            Assign Interpreter
           </label>
           <select
             name="translator"
@@ -340,7 +336,7 @@ const ContentUploader = ({
           >
             <option value="">
               {isLoadingTranslators
-                ? "Loading translators..."
+                ? "Loading interpreters..."
                 : "-- None Selected --"}
             </option>
             {!isLoadingTranslators &&
@@ -351,7 +347,7 @@ const ContentUploader = ({
               ))}
           </select>
           <p className="text-xs text-gray-400 mt-2">
-            Manage translators in the **Translator** tab.
+            Manage interpreters in the **Interpreter** tab.
           </p>
         </div>
       </div>
@@ -520,17 +516,19 @@ const ContentUploader = ({
                   className="w-full p-2 text-sm bg-gray-700 border-gray-600 rounded-md text-white mb-2"
                   placeholder="https://externalsite.com/watch/series/s1/ep1"
                 />
-                <label className="block text-xs text-gray-400">
-                  Subtitle Link (VTT/SRT)
+                {/* --- CHANGED: Subtitle Link replaced with Download Link --- */}
+                <label className="block text-xs text-gray-400 flex items-center">
+                  <Download size={12} className="mr-1" /> Episode Download Link
                 </label>
                 <input
                   type="url"
-                  name="subtitleLink"
-                  value={ep.subtitleLink}
+                  name="downloadLink"
+                  value={ep.downloadLink}
                   onChange={(e) => handleEpisodeChange(index, e)}
                   className="w-full p-2 text-sm bg-gray-700 border-gray-600 rounded-md text-white"
-                  placeholder="https://streaming.com/subtitles.vtt"
+                  placeholder="https://externalsite.com/download/episode.mp4"
                 />
+                {/* ------------------------------------------------------- */}
               </div>
             ))}
           </div>

@@ -27,7 +27,6 @@ function Header({
   selectedGenre,
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef(null);
   const headerRef = useRef(null);
@@ -156,9 +155,9 @@ function Header({
                   ? "hover:bg-gray-700"
                   : "hover:bg-gray-200"
               }`}
-              title="Translated Films"
+              title="Interpreted Films"
             >
-              <BookOpen size={20} className="inline mr-1" /> Translated
+              <BookOpen size={20} className="inline mr-1" /> Interpreted
             </button>
             <button
               onClick={() => navigate("request")}
@@ -400,11 +399,12 @@ function Header({
                   ? authStatus.isAdmin
                     ? "Admin Panel"
                     : "Login / Sign Up"
+                  : item === "translated"
+                  ? "Interpreted"
                   : item}
               </button>
             ))}
 
-            {/* --- FIX: Updated APK Download Link --- */}
             <a
               href="https://github.com/gisaiconfii-boop/kigalistreams-appFILES-APK/releases/download/v1.0/Kstreams.apk"
               download
@@ -413,7 +413,6 @@ function Header({
             >
               <Download size={20} className="inline mr-3" /> Download APK
             </a>
-            {/* ------------------------------------ */}
 
             {authStatus.user && !authStatus.user.isAnonymous && (
               <button
