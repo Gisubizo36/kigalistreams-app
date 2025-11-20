@@ -217,20 +217,21 @@ export default function App() {
     }
     if (searchQuery) {
       const queryLower = searchQuery.toLowerCase();
-      // --- CHANGED: SEARCH LOGIC (TITLE & INTERPRETER ONLY) ---
       results = results.filter((item) => {
         const matchesTitle = item.title.toLowerCase().includes(queryLower);
         const matchesTranslator =
           item.translator && item.translator.toLowerCase().includes(queryLower);
         return matchesTitle || matchesTranslator;
       });
-      // --------------------------------------------------------
     }
     return results;
   }, [content, searchQuery, selectedGenre]);
 
   const currentViewElement = useMemo(() => {
-    if (authStatus.isLoading || isContentLoading) {
+    // --- FIXED: REMOVED "|| isContentLoading" ---
+    // We only block the view if Auth is loading. 
+    // We do NOT block for content, so the Skeletons can show.
+    if (authStatus.isLoading) {
       return (
         <div className="w-full h-screen flex items-center justify-center">
           <h1 className="text-5xl font-black text-amber-500 animate-pulse">
@@ -239,6 +240,7 @@ export default function App() {
         </div>
       );
     }
+    // ---------------------------------------------
 
     if (view === "detail" && currentId) {
       return (

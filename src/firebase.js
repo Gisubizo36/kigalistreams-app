@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+// We add 'enableIndexedDbPersistence' to save data on the phone
+import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
@@ -13,10 +14,22 @@ const firebaseConfig = {
 
 let app, db, auth;
 
-if (firebaseConfig) {
+if (firebaseConfig.apiKey) {
   try {
     app = initializeApp(firebaseConfig);
+    
+    // Initialize Database
     db = getFirestore(app);
+    
+    // ENABLE OFFLINE PERSISTENCE (The Magic Glue)
+    enableIndexedDbPersistence(db).catch((err) => {
+      if (err.code == 'failed-precondition') {
+        console.log('Persistence failed: Multiple tabs open');
+      } else if (err.code == 'unimplemented') {
+        console.log('Persistence not supported by browser');
+      }
+    });
+
     auth = getAuth(app);
   } catch (error) {
     console.error("Firebase initialization failed:", error);
