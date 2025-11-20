@@ -214,7 +214,6 @@ const ContentUploader = ({
             value={formData.title}
             onChange={handleChange}
             required
-            disabled={!!editingItem}
             className={`w-full p-3 border rounded-lg text-white placeholder-gray-400 focus:ring-emerald-500 ${
               !!editingItem
                 ? "bg-gray-600 opacity-70 border-gray-500"
