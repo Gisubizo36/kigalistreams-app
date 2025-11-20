@@ -120,27 +120,29 @@ export default function App() {
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
-  // --- SMART PROMO LOGIC (Session Based + No iOS) ---
+  // --- SMART PROMO LOGIC (Waits for Content Loading) ---
   const [showApkPromo, setShowApkPromo] = useState(false);
 
   useEffect(() => {
-    // 1. Check if running on Web (Not Native App)
+    // 1. STOP if content is still loading (Wait for spinner to finish)
+    if (isContentLoading) return;
+
+    // 2. Check if running on Web (Not Native App)
     const isWeb = !Capacitor.isNativePlatform();
     
-    // 2. Check if user previously closed it IN THIS SESSION
-    // using sessionStorage ensures it shows again if they close/reopen browser
+    // 3. Check if user previously closed it IN THIS SESSION
     const hasClosedPromo = sessionStorage.getItem("kigalistreams_promo_closed");
 
-    // 3. DETECT IOS (iPhone/iPad/iPod)
+    // 4. DETECT IOS (iPhone/iPad/iPod)
     const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
     
     // Logic: Must be Web + Not Closed + NOT iOS
     if (isWeb && !hasClosedPromo && !isIOS) {
-      // Delay slightly so it doesn't pop up instantly
+      // Delay slightly (3 seconds) AFTER content is fully loaded
       const timer = setTimeout(() => setShowApkPromo(true), 3000);
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [isContentLoading]); // <--- Logic runs when loading finishes
 
   const closePromo = () => {
     setShowApkPromo(false);
@@ -511,7 +513,7 @@ export default function App() {
 
       {currentViewElement}
 
-      {/* SHOW PROMO IF WEB USER (Hidden on iOS, Hidden in App) */}
+      {/* SHOW PROMO IF WEB USER (Mobile gets button, Desktop gets text) */}
       {showApkPromo && <ApkPromoToast onClose={closePromo} />}
 
     </div>
