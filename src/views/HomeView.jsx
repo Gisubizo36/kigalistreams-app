@@ -10,8 +10,9 @@ const HomeView = ({
   toggleWatchLater,
   isContentLoading,
 }) => {
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const [transitionDuration, setTransitionDuration] = useState(700);
+  // --- NEW STATE FOR CIRCULAR SLIDER ---
+  const [currentCircleIndex, setCurrentCircleIndex] = useState(0);
+  // -----------------------------------
 
   const watchLaterIds = watchLater;
 
@@ -35,6 +36,33 @@ const HomeView = ({
     [sortedContent]
   );
 
+  // --- UPDATED: ITEMS FOR MOBILE CIRCULAR SLIDER ---
+  const baseHeroItems = useMemo(() => {
+    // 1. Get Top 10 Recent
+    const recentItems = sortedContent.slice(0, 10);
+    
+    // 2. Combine Trending + Recent
+    const combined = [...trendingItems, ...recentItems];
+
+    // 3. Deduplicate (Remove copies if a movie is both Trending AND Recent)
+    const uniqueItems = Array.from(new Map(combined.map(item => [item.id, item])).values());
+
+    // 4. Shuffle the list (Randomize)
+    const shuffled = uniqueItems.sort(() => 0.5 - Math.random());
+
+    // 5. Ensure we have enough items (at least 12) for smooth rotation
+    let pool = [...shuffled];
+    if (pool.length === 0) return [];
+    
+    while (pool.length < 12) {
+      pool = [...pool, ...shuffled];
+    }
+    
+    return pool.slice(0, 24); // Limit to 24 items to save memory
+  }, [trendingItems, sortedContent]);
+  // -----------------------------------------------
+
+  // Items for the desktop slider (Keep as Trending only, or change if you want)
   const heroItems = useMemo(() => {
     const items = trendingItems.length > 0 ? trendingItems : sortedContent;
     const baseItems = items.slice(0, 8);
@@ -47,67 +75,15 @@ const HomeView = ({
     return duplicatedItems;
   }, [trendingItems, sortedContent]);
 
-  const [currentCardIndex, setCurrentCardIndex] = useState(0);
-
-  const baseHeroItems = useMemo(() => {
-    const items = trendingItems.length > 0 ? trendingItems : sortedContent;
-    let pool = [...items];
-    while (pool.length < 24 && items.length > 0) {
-      pool = [...pool, ...items];
-    }
-    return pool.slice(0, 24); 
-  }, [trendingItems, sortedContent]);
-
-  const [currentCardGroupIndex, setCurrentCardGroupIndex] = useState(0);
-  const [internalRotationIndex, setInternalRotationIndex] = useState(0);
-  const [isFading, setIsFading] = useState(false);
-  const totalGroups = Math.ceil(baseHeroItems.length / 3);
-
-  const heroItemsForStack = useMemo(() => {
-    if (baseHeroItems.length === 0) return [];
-
-    let baseStack = [];
-    if (baseHeroItems.length === 1) {
-      baseStack = [baseHeroItems[0], baseHeroItems[0], baseHeroItems[0]];
-    } else if (baseHeroItems.length === 2) {
-      baseStack = [baseHeroItems[1], baseHeroItems[0], baseHeroItems[1]];
-    } else {
-      const baseIndex = currentCardGroupIndex * 3;
-      const centerItem = baseHeroItems[(baseIndex + 0) % baseHeroItems.length];
-      const leftItem = baseHeroItems[(baseIndex + 1) % baseHeroItems.length];
-      const rightItem = baseHeroItems[(baseIndex + 2) % baseHeroItems.length];
-      baseStack = [leftItem, centerItem, rightItem];
-    }
-
-    if (internalRotationIndex === 0) {
-      return baseStack;
-    } else if (internalRotationIndex === 1) {
-      return [baseStack[2], baseStack[0], baseStack[1]];
-    } else {
-      return [baseStack[1], baseStack[2], baseStack[0]];
-    }
-  }, [currentCardGroupIndex, baseHeroItems, internalRotationIndex]);
-
+  // --- EFFECT FOR AUTO-SLIDING CIRCLES ---
   useEffect(() => {
     if (baseHeroItems.length <= 1) return;
-    const internalInterval = setInterval(() => {
-      setInternalRotationIndex((prevIndex) => (prevIndex + 1) % 3);
-    }, 60 * 1000);
-    return () => clearInterval(internalInterval);
+    const interval = setInterval(() => {
+      setCurrentCircleIndex((prev) => (prev + 1) % baseHeroItems.length);
+    }, 3000); // Slide every 3 seconds
+    return () => clearInterval(interval);
   }, [baseHeroItems.length]);
-
-  useEffect(() => {
-    if (totalGroups <= 1) return;
-    const groupInterval = setInterval(() => {
-      setIsFading(true);
-      setTimeout(() => {
-        setCurrentCardGroupIndex((prevIndex) => (prevIndex + 1) % totalGroups);
-        setInternalRotationIndex(0);
-        setIsFading(false);
-      }, 500);
-    }, 15 * 60 * 1000);
-    return () => clearInterval(groupInterval);
-  }, [totalGroups]);
+  // ------------------------------------------
 
   const topRatedItems = useMemo(
     () =>
@@ -144,81 +120,76 @@ const HomeView = ({
       >
         <div className="absolute inset-0 bg-black/60"></div>
 
+        {/* --- MOBILE HERO SECTION (CIRCULAR SLIDER) --- */}
         <div className="relative z-10 container mx-auto pt-8 lg:hidden">
-          <div
-            className={`relative w-full h-80 flex items-end justify-center overflow-hidden transition-opacity duration-500 ease-in-out ${
-              isFading ? "opacity-0" : "opacity-100"
-            }`}
-          >
-            {/* --- UPDATED SKELETON LOGIC --- */}
-            {heroItemsForStack.length > 0 ? (
-              heroItemsForStack.map((item, index) => {
-                let itemClass = "";
-                let cornerClass = "rounded-xl";
-                let glowClass = "";
-                let heightClass = "";
+          <div className="relative w-full h-80 flex items-center justify-center overflow-hidden">
+            {baseHeroItems.length > 0 ? (
+              baseHeroItems.map((item, index) => {
+                // Logic to determine position relative to the center circle
+                const length = baseHeroItems.length;
+                let position = (index - currentCircleIndex + length) % length;
+                // Adjust position to be -1, 0, or 1 for the active three
+                if (position > length / 2) position -= length;
 
-                if (index === 0) {
-                  itemClass = "z-10 -mr-28";
-                  heightClass = "h-5/6";
-                  glowClass =
-                    "border border-pink-500/50 shadow-md shadow-pink-500/20";
-                } else if (index === 1) {
-                  itemClass = "z-20";
-                  heightClass = "h-full";
-                  cornerClass = "rounded-2xl";
-                  glowClass =
-                    "border border-amber-500/50 shadow-md shadow-amber-500/20";
-                } else {
-                  itemClass = "z-10 -ml-28";
-                  heightClass = "h-5/6";
-                  glowClass =
-                    "border border-blue-500/50 shadow-md shadow-blue-500/20";
+                // Only render the 3 active circles
+                if (position < -1 || position > 1) return null;
+
+                let itemClass = "z-10 scale-90 opacity-60 grayscale-[50%]";
+                let translateClass = "";
+
+                if (position === 0) {
+                  // Center item: Full size, full color, glowing border
+                  itemClass =
+                    "z-20 scale-110 opacity-100 border-4 border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.5)] grayscale-0";
+                  translateClass = "translate-x-0";
+                } else if (position === -1) {
+                  // Left item: Pushed left
+                  translateClass = "-translate-x-[75%]";
+                } else if (position === 1) {
+                  // Right item: Pushed right
+                  translateClass = "translate-x-[75%]";
                 }
 
                 return (
                   <div
-                    key={`${item.id}-${index}-${currentCardIndex}`}
-                    className={`w-1/2 aspect-[2/3] transition-all duration-700 ease-in-out ${itemClass} ${heightClass}`}
+                    key={`${item.id}-${index}`}
+                    className={`absolute w-56 h-56 rounded-full overflow-hidden transition-all duration-700 ease-in-out cursor-pointer bg-gray-900 ${itemClass} ${translateClass}`}
                     onClick={() => navigate("detail", item.id)}
                   >
-                    <div className="relative w-full h-full">
-                      <img
-                        src={
-                          item.thumbnail ||
-                          `https://placehold.co/400x600/1f2937/fff?text=${encodeURIComponent(
-                            item.title
-                          )}`
-                        }
-                        alt={item.title}
-                        className={`w-full h-full object-cover ${cornerClass} ${glowClass}`}
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = `https://placehold.co/400x600/1f2937/fff?text=${encodeURIComponent(
-                            item.title
-                          )}`;
-                        }}
-                      />
-                    </div>
+                    <img
+                      src={
+                        item.thumbnail ||
+                        `https://placehold.co/400x400/1f2937/fff?text=${encodeURIComponent(
+                          item.title
+                        )}`
+                      }
+                      alt={item.title}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = `https://placehold.co/400x400/1f2937/fff?text=${encodeURIComponent(
+                          item.title
+                        )}`;
+                      }}
+                    />
                   </div>
                 );
               })
             ) : (
-              // --- EXACT SKELETON REPLACEMENT ---
-              <div className="w-full h-full flex items-end justify-center relative">
-                {/* Left Skeleton Card */}
-                <div className="w-1/2 aspect-[2/3] z-10 -mr-28 h-5/6 bg-gray-800 rounded-xl border border-gray-700 animate-pulse"></div>
-                
-                {/* Center Skeleton Card (Main) */}
-                <div className="w-1/2 aspect-[2/3] z-20 h-full bg-gray-700 rounded-2xl border border-gray-600 shadow-2xl animate-pulse"></div>
-                
-                {/* Right Skeleton Card */}
-                <div className="w-1/2 aspect-[2/3] z-10 -ml-28 h-5/6 bg-gray-800 rounded-xl border border-gray-700 animate-pulse"></div>
+              // --- CIRCULAR SKELETON ---
+              <div className="relative w-full h-full flex items-center justify-center">
+                {/* Left Skeleton */}
+                <div className="absolute w-56 h-56 rounded-full bg-gray-800 -translate-x-[75%] scale-90 opacity-60 animate-pulse"></div>
+                {/* Center Skeleton */}
+                <div className="absolute w-56 h-56 rounded-full bg-gray-700 z-20 scale-110 border-4 border-gray-600 animate-pulse shadow-xl"></div>
+                {/* Right Skeleton */}
+                <div className="absolute w-56 h-56 rounded-full bg-gray-800 translate-x-[75%] scale-90 opacity-60 animate-pulse"></div>
               </div>
-              // ----------------------------------
+              // ---------------------------
             )}
           </div>
         </div>
+        {/* --------------------------------------------- */}
 
         <div className="relative z-10 container mx-auto px-4 sm:px-6 pb-12 lg:pb-0 lg:h-full lg:flex lg:items-center">
           <div className="flex-1 max-w-lg text-center lg:text-left pt-4 lg:pt-0">
