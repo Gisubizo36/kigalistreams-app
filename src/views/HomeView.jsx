@@ -10,10 +10,7 @@ const HomeView = ({
   toggleWatchLater,
   isContentLoading,
 }) => {
-  // --- NEW STATE FOR CIRCULAR SLIDER ---
   const [currentCircleIndex, setCurrentCircleIndex] = useState(0);
-  // -----------------------------------
-
   const watchLaterIds = watchLater;
 
   const continueWatchingItems = useMemo(() => {
@@ -38,31 +35,19 @@ const HomeView = ({
 
   // --- UPDATED: ITEMS FOR MOBILE CIRCULAR SLIDER ---
   const baseHeroItems = useMemo(() => {
-    // 1. Get Top 10 Recent
     const recentItems = sortedContent.slice(0, 10);
-    
-    // 2. Combine Trending + Recent
     const combined = [...trendingItems, ...recentItems];
-
-    // 3. Deduplicate (Remove copies if a movie is both Trending AND Recent)
     const uniqueItems = Array.from(new Map(combined.map(item => [item.id, item])).values());
-
-    // 4. Shuffle the list (Randomize)
     const shuffled = uniqueItems.sort(() => 0.5 - Math.random());
-
-    // 5. Ensure we have enough items (at least 12) for smooth rotation
+    
     let pool = [...shuffled];
     if (pool.length === 0) return [];
-    
     while (pool.length < 12) {
       pool = [...pool, ...shuffled];
     }
-    
-    return pool.slice(0, 24); // Limit to 24 items to save memory
+    return pool.slice(0, 24);
   }, [trendingItems, sortedContent]);
-  // -----------------------------------------------
 
-  // Items for the desktop slider (Keep as Trending only, or change if you want)
   const heroItems = useMemo(() => {
     const items = trendingItems.length > 0 ? trendingItems : sortedContent;
     const baseItems = items.slice(0, 8);
@@ -75,122 +60,89 @@ const HomeView = ({
     return duplicatedItems;
   }, [trendingItems, sortedContent]);
 
-  // --- EFFECT FOR AUTO-SLIDING CIRCLES ---
+  // --- UPDATED: 9 SECOND INTERVAL ---
   useEffect(() => {
     if (baseHeroItems.length <= 1) return;
     const interval = setInterval(() => {
       setCurrentCircleIndex((prev) => (prev + 1) % baseHeroItems.length);
-    }, 3000); // Slide every 3 seconds
+    }, 9000); // <--- CHANGED TO 9000 (9 Seconds)
     return () => clearInterval(interval);
   }, [baseHeroItems.length]);
-  // ------------------------------------------
 
   const topRatedItems = useMemo(
-    () =>
-      sortedContent
-        .filter((item) => item.isTopRated)
-        .sort((a, b) => b.rating - a.rating)
-        .slice(0, 10),
+    () => sortedContent.filter((item) => item.isTopRated).sort((a, b) => b.rating - a.rating).slice(0, 10),
     [sortedContent]
   );
   const recentlyAddedItems = sortedContent.slice(0, 10);
-  const moviesItems = useMemo(
-    () => sortedContent.filter((item) => item.type === "Movie").slice(0, 10),
-    [sortedContent]
-  );
-  const seriesItems = useMemo(
-    () =>
-      sortedContent.filter((item) => item.type === "TV Series").slice(0, 10),
-    [sortedContent]
-  );
-  const animeItems = useMemo(
-    () =>
-      sortedContent.filter((item) => item.genre.includes("Anime")).slice(0, 10),
-    [sortedContent]
-  );
+  const moviesItems = useMemo(() => sortedContent.filter((item) => item.type === "Movie").slice(0, 10), [sortedContent]);
+  const seriesItems = useMemo(() => sortedContent.filter((item) => item.type === "TV Series").slice(0, 10), [sortedContent]);
+  const animeItems = useMemo(() => sortedContent.filter((item) => item.genre.includes("Anime")).slice(0, 10), [sortedContent]);
 
   return (
     <div className="min-h-screen pt-40 lg:pt-24 relative">
       <div
         className="relative w-full h-auto lg:h-[500px] bg-cover bg-center -mt-16"
         style={{
-          backgroundImage:
-            "url(https://images.pexels.com/photos/109669/pexels-photo-109669.jpeg)",
+          backgroundImage: "url(https://images.pexels.com/photos/109669/pexels-photo-109669.jpeg)",
         }}
       >
         <div className="absolute inset-0 bg-black/60"></div>
 
-        {/* --- MOBILE HERO SECTION (CIRCULAR SLIDER) --- */}
+        {/* --- MOBILE HERO SECTION (UPDATED "EGG" SLIDER) --- */}
         <div className="relative z-10 container mx-auto pt-8 lg:hidden">
           <div className="relative w-full h-80 flex items-center justify-center overflow-hidden">
             {baseHeroItems.length > 0 ? (
               baseHeroItems.map((item, index) => {
-                // Logic to determine position relative to the center circle
                 const length = baseHeroItems.length;
                 let position = (index - currentCircleIndex + length) % length;
-                // Adjust position to be -1, 0, or 1 for the active three
                 if (position > length / 2) position -= length;
 
-                // Only render the 3 active circles
                 if (position < -1 || position > 1) return null;
 
-                let itemClass = "z-10 scale-90 opacity-60 grayscale-[50%]";
+                let itemClass = "z-10 scale-90 opacity-50 grayscale-[50%]";
                 let translateClass = "";
 
                 if (position === 0) {
-                  // Center item: Full size, full color, glowing border
+                  // --- UPDATED CENTER STYLE: Multi-color Glow + Full Opacity ---
                   itemClass =
-                    "z-20 scale-110 opacity-100 border-4 border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.5)] grayscale-0";
+                    "z-20 scale-110 opacity-100 border-2 border-amber-400 grayscale-0 shadow-[0_0_20px_rgba(245,158,11,0.6),0_0_40px_rgba(168,85,247,0.5),0_0_60px_rgba(6,182,212,0.5)]";
                   translateClass = "translate-x-0";
                 } else if (position === -1) {
-                  // Left item: Pushed left
-                  translateClass = "-translate-x-[75%]";
+                  translateClass = "-translate-x-[85%]";
                 } else if (position === 1) {
-                  // Right item: Pushed right
-                  translateClass = "translate-x-[75%]";
+                  translateClass = "translate-x-[85%]";
                 }
 
                 return (
                   <div
                     key={`${item.id}-${index}`}
-                    className={`absolute w-56 h-56 rounded-full overflow-hidden transition-all duration-700 ease-in-out cursor-pointer bg-gray-900 ${itemClass} ${translateClass}`}
+                    // --- UPDATED SHAPE: w-52 h-64 + rounded-full = Vertical Oval ("Egg") ---
+                    className={`absolute w-52 h-64 rounded-full overflow-hidden transition-all duration-1000 ease-in-out cursor-pointer bg-gray-900 ${itemClass} ${translateClass}`}
                     onClick={() => navigate("detail", item.id)}
                   >
                     <img
                       src={
                         item.thumbnail ||
-                        `https://placehold.co/400x400/1f2937/fff?text=${encodeURIComponent(
-                          item.title
-                        )}`
+                        `https://placehold.co/400x400/1f2937/fff?text=${encodeURIComponent(item.title)}`
                       }
                       alt={item.title}
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = `https://placehold.co/400x400/1f2937/fff?text=${encodeURIComponent(
-                          item.title
-                        )}`;
-                      }}
                     />
                   </div>
                 );
               })
             ) : (
-              // --- CIRCULAR SKELETON ---
+              // --- UPDATED "EGG" SKELETON ---
               <div className="relative w-full h-full flex items-center justify-center">
-                {/* Left Skeleton */}
-                <div className="absolute w-56 h-56 rounded-full bg-gray-800 -translate-x-[75%] scale-90 opacity-60 animate-pulse"></div>
-                {/* Center Skeleton */}
-                <div className="absolute w-56 h-56 rounded-full bg-gray-700 z-20 scale-110 border-4 border-gray-600 animate-pulse shadow-xl"></div>
-                {/* Right Skeleton */}
-                <div className="absolute w-56 h-56 rounded-full bg-gray-800 translate-x-[75%] scale-90 opacity-60 animate-pulse"></div>
+                <div className="absolute w-52 h-64 rounded-full bg-gray-800 -translate-x-[85%] scale-90 opacity-50 animate-pulse"></div>
+                <div className="absolute w-52 h-64 rounded-full bg-gray-700 z-20 scale-110 border-2 border-gray-600 animate-pulse shadow-xl"></div>
+                <div className="absolute w-52 h-64 rounded-full bg-gray-800 translate-x-[85%] scale-90 opacity-50 animate-pulse"></div>
               </div>
-              // ---------------------------
             )}
           </div>
         </div>
-        {/* --------------------------------------------- */}
 
+        {/* DESKTOP HERO SECTION (UNCHANGED) */}
         <div className="relative z-10 container mx-auto px-4 sm:px-6 pb-12 lg:pb-0 lg:h-full lg:flex lg:items-center">
           <div className="flex-1 max-w-lg text-center lg:text-left pt-4 lg:pt-0">
             <h1
@@ -222,9 +174,7 @@ const HomeView = ({
                         <img
                           src={
                             item.thumbnail ||
-                            `https://placehold.co/200x300/1f2937/fff?text=${encodeURIComponent(
-                              item.title
-                            )}`
+                            `https://placehold.co/200x300/1f2937/fff?text=${encodeURIComponent(item.title)}`
                           }
                           alt={item.title}
                           className="w-full h-full object-cover rounded-lg shadow-2xl"
