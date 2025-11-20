@@ -3,11 +3,10 @@ import React, {
   useEffect,
   useCallback,
   useMemo,
-  useRef,
 } from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "./firebase.js";
-import { getInitialView, getInitialId, Genres } from "./utils.js";
+import { getInitialView, getInitialId } from "./utils.js";
 import { useAdminPassword } from "./hooks/useAdminPassword.js";
 import { useAppState } from "./hooks/useAppState.js";
 import { Capacitor } from "@capacitor/core"; 
@@ -32,9 +31,8 @@ import TranslatedFilmsView from "./views/TranslatedFilmsView.jsx";
 // --- CONFIGURATION ---
 const APK_DOWNLOAD_URL = "https://github.com/gisaiconfii-boop/kigalistreams-appFILES-APK/releases/download/v1.0/KStreams.apk";
 
-// --- COMPONENT: APK PROMO TOAST (Smart Version) ---
+// --- COMPONENT: APK PROMO TOAST ---
 const ApkPromoToast = ({ onClose }) => {
-  // Check if user is on a mobile screen (width < 768px)
   const isMobileScreen = window.innerWidth < 768;
 
   return (
@@ -48,7 +46,6 @@ const ApkPromoToast = ({ onClose }) => {
         </h4>
         
         {isMobileScreen ? (
-          // --- MOBILE WEB VERSION (Button) ---
           <>
             <p className="text-gray-400 text-xs mt-1">
               Watch offline with better performance. Download the APK now.
@@ -61,7 +58,6 @@ const ApkPromoToast = ({ onClose }) => {
             </a>
           </>
         ) : (
-          // --- DESKTOP WEB VERSION (Info Only) ---
           <>
             <p className="text-gray-400 text-xs mt-1">
               Experience KigaliStreams on the go! 
@@ -79,7 +75,6 @@ const ApkPromoToast = ({ onClose }) => {
   );
 };
 
-// 4. Main App & Router
 export default function App() {
   const [adminPassword, updateAdminPassword] = useAdminPassword();
 
@@ -88,7 +83,6 @@ export default function App() {
     toggleTheme,
     content,
     isContentLoading,
-    setContent,
     continueWatching,
     watchLater,
     saveUserProgress,
@@ -119,48 +113,33 @@ export default function App() {
   }, []);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  
-  // --- SMART PROMO LOGIC (Waits for Content Loading) ---
   const [showApkPromo, setShowApkPromo] = useState(false);
 
   useEffect(() => {
-    // 1. STOP if content is still loading (Wait for spinner to finish)
     if (isContentLoading) return;
-
-    // 2. Check if running on Web (Not Native App)
     const isWeb = !Capacitor.isNativePlatform();
-    
-    // 3. Check if user previously closed it IN THIS SESSION
     const hasClosedPromo = sessionStorage.getItem("kigalistreams_promo_closed");
-
-    // 4. DETECT IOS (iPhone/iPad/iPod)
     const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
     
-    // Logic: Must be Web + Not Closed + NOT iOS
     if (isWeb && !hasClosedPromo && !isIOS) {
-      // Delay slightly (3 seconds) AFTER content is fully loaded
       const timer = setTimeout(() => setShowApkPromo(true), 3000);
       return () => clearTimeout(timer);
     }
-  }, [isContentLoading]); // <--- Logic runs when loading finishes
+  }, [isContentLoading]);
 
   const closePromo = () => {
     setShowApkPromo(false);
-    // Save to sessionStorage (clears when browser/tab closes)
     sessionStorage.setItem("kigalistreams_promo_closed", "true");
   };
 
-  // --- NEW: PREVENT PWA INSTALL PROMPT ---
   useEffect(() => {
     const handler = (e) => {
-      // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
       console.log("PWA Install prompt suppressed");
     };
     window.addEventListener("beforeinstallprompt", handler);
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
-  // ---------------------------------------
 
   const navigate = useCallback((newView, id = null) => {
     if (document.startViewTransition) {
@@ -228,19 +207,7 @@ export default function App() {
   }, [content, searchQuery, selectedGenre]);
 
   const currentViewElement = useMemo(() => {
-    // --- FIXED: REMOVED "|| isContentLoading" ---
-    // We only block the view if Auth is loading. 
-    // We do NOT block for content, so the Skeletons can show.
-    if (authStatus.isLoading) {
-      return (
-        <div className="w-full h-screen flex items-center justify-center">
-          <h1 className="text-5xl font-black text-amber-500 animate-pulse">
-            KSTREAMS
-          </h1>
-        </div>
-      );
-    }
-    // ---------------------------------------------
+    // --- LOADING BLOCK REMOVED FOR INSTANT ACCESS ---
 
     if (view === "detail" && currentId) {
       return (
@@ -311,7 +278,6 @@ export default function App() {
       );
     }
 
-    // Fallback for allcontent, search, and genre
     if (view === "search" || view === "genre" || view === "allcontent") {
       const title =
         view === "allcontent"
@@ -361,7 +327,6 @@ export default function App() {
                 ))}
               </div>
             ) : (
-              /* Grid View for Genre and AllContent */
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
                 {filteredContent.map((item) => (
                   <Card
@@ -385,7 +350,6 @@ export default function App() {
       );
     }
 
-    // Default to HomeView
     return (
       <HomeView
         content={content}
@@ -447,48 +411,17 @@ export default function App() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         .font-inter { font-family: 'Inter', sans-serif; }
-        
         body.view-home header[data-scrolled="false"] {
           background-color: transparent;
         }
-
-        body {
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
-        
-        body::-webkit-scrollbar {
-          display: none;
-          width: 0;
-          height: 0;
-        }
-        
-        .custom-scrollbar {
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar {
-          display: none;
-          width: 0;
-          height: 0;
-        }
-        
+        body { scrollbar-width: none; -ms-overflow-style: none; }
+        body::-webkit-scrollbar { display: none; width: 0; height: 0; }
+        .custom-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+        .custom-scrollbar::-webkit-scrollbar { display: none; width: 0; height: 0; }
         body { transition: background-color 0.3s, color 0.3s; }
-        
-        @keyframes scroll {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .animate-scroll {
-          animation: scroll 30s linear infinite;
-        }
-
-        .performant-bg {
-          background-color: #000000;
-          transform: scale(1.05);
-        }
-
+        @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .animate-scroll { animation: scroll 30s linear infinite; }
+        .performant-bg { background-color: #000000; transform: scale(1.05); }
         @media (min-width: 1024px) {
           .performant-bg {
             background-image: url(https://images.pexels.com/photos/65437/pexels-photo-65437.jpeg);
@@ -515,9 +448,7 @@ export default function App() {
 
       {currentViewElement}
 
-      {/* SHOW PROMO IF WEB USER (Mobile gets button, Desktop gets text) */}
       {showApkPromo && <ApkPromoToast onClose={closePromo} />}
-
     </div>
   );
 }

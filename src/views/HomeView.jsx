@@ -49,17 +49,14 @@ const HomeView = ({
 
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
 
-  // --- FIX 4: Increased slice to 24 to allow rotation ---
   const baseHeroItems = useMemo(() => {
     const items = trendingItems.length > 0 ? trendingItems : sortedContent;
-    // Ensure we have enough items to rotate. If < 24, duplicate them.
     let pool = [...items];
     while (pool.length < 24 && items.length > 0) {
       pool = [...pool, ...items];
     }
     return pool.slice(0, 24); 
   }, [trendingItems, sortedContent]);
-  // ------------------------------------------------------
 
   const [currentCardGroupIndex, setCurrentCardGroupIndex] = useState(0);
   const [internalRotationIndex, setInternalRotationIndex] = useState(0);
@@ -91,20 +88,16 @@ const HomeView = ({
     }
   }, [currentCardGroupIndex, baseHeroItems, internalRotationIndex]);
 
-  console.log("HERO ITEMS FOR STACK:", heroItemsForStack);
   useEffect(() => {
     if (baseHeroItems.length <= 1) return;
-
     const internalInterval = setInterval(() => {
       setInternalRotationIndex((prevIndex) => (prevIndex + 1) % 3);
     }, 60 * 1000);
-
     return () => clearInterval(internalInterval);
   }, [baseHeroItems.length]);
 
   useEffect(() => {
     if (totalGroups <= 1) return;
-
     const groupInterval = setInterval(() => {
       setIsFading(true);
       setTimeout(() => {
@@ -113,7 +106,6 @@ const HomeView = ({
         setIsFading(false);
       }, 500);
     }, 15 * 60 * 1000);
-
     return () => clearInterval(groupInterval);
   }, [totalGroups]);
 
@@ -158,6 +150,7 @@ const HomeView = ({
               isFading ? "opacity-0" : "opacity-100"
             }`}
           >
+            {/* --- UPDATED SKELETON LOGIC --- */}
             {heroItemsForStack.length > 0 ? (
               heroItemsForStack.map((item, index) => {
                 let itemClass = "";
@@ -211,9 +204,18 @@ const HomeView = ({
                 );
               })
             ) : (
-              <div className="flex items-center justify-center w-1/2 h-5/6 aspect-[2/3] bg-gray-700 rounded-xl">
-                <p className="text-gray-400">Loading...</p>
+              // --- EXACT SKELETON REPLACEMENT ---
+              <div className="w-full h-full flex items-end justify-center relative">
+                {/* Left Skeleton Card */}
+                <div className="w-1/2 aspect-[2/3] z-10 -mr-28 h-5/6 bg-gray-800 rounded-xl border border-gray-700 animate-pulse"></div>
+                
+                {/* Center Skeleton Card (Main) */}
+                <div className="w-1/2 aspect-[2/3] z-20 h-full bg-gray-700 rounded-2xl border border-gray-600 shadow-2xl animate-pulse"></div>
+                
+                {/* Right Skeleton Card */}
+                <div className="w-1/2 aspect-[2/3] z-10 -ml-28 h-5/6 bg-gray-800 rounded-xl border border-gray-700 animate-pulse"></div>
               </div>
+              // ----------------------------------
             )}
           </div>
         </div>
