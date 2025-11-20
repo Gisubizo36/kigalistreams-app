@@ -28,8 +28,17 @@ function Header({
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  // --- NEW STATE FOR iOS DETECTION ---
+  const [isIOS, setIsIOS] = useState(false);
+  
   const profileMenuRef = useRef(null);
   const headerRef = useRef(null);
+
+  // --- DETECT IOS ON LOAD ---
+  useEffect(() => {
+    const checkIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    setIsIOS(checkIOS);
+  }, []);
 
   useEffect(() => {
     if (isMenuOpen) {
@@ -405,15 +414,17 @@ function Header({
               </button>
             ))}
 
-            {/* UPDATED DOWNLOAD LINK */}
-            <a
-              href="https://github.com/gisaiconfii-boop/kigalistreams-appFILES-APK/releases/download/v1.0/KStreams.apk"
-              download
-              onClick={() => setIsMenuOpen(false)}
-              className={`block w-full text-left p-3 rounded-lg text-lg font-medium transition-colors bg-green-600 text-white hover:bg-green-700 flex items-center`}
-            >
-              <Download size={20} className="inline mr-3" /> Download Android App
-            </a>
+            {/* ONLY SHOW DOWNLOAD BUTTON IF NOT ON IPHONE */}
+            {!isIOS && (
+              <a
+                href="https://github.com/gisaiconfii-boop/kigalistreams-appFILES-APK/releases/download/v1.0/KStreams.apk"
+                download
+                onClick={() => setIsMenuOpen(false)}
+                className={`block w-full text-left p-3 rounded-lg text-lg font-medium transition-colors bg-green-600 text-white hover:bg-green-700 flex items-center`}
+              >
+                <Download size={20} className="inline mr-3" /> Download Android App
+              </a>
+            )}
 
             {authStatus.user && !authStatus.user.isAnonymous && (
               <button

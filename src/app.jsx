@@ -10,7 +10,7 @@ import { auth } from "./firebase.js";
 import { getInitialView, getInitialId, Genres } from "./utils.js";
 import { useAdminPassword } from "./hooks/useAdminPassword.js";
 import { useAppState } from "./hooks/useAppState.js";
-import { Capacitor } from "@capacitor/core"; // Make sure this is imported!
+import { Capacitor } from "@capacitor/core"; 
 
 // Import Icons
 import { Download, X } from "lucide-react";
@@ -48,7 +48,7 @@ const ApkPromoToast = ({ onClose }) => {
         </h4>
         
         {isMobileScreen ? (
-          // --- MOBILE VERSION (Button) ---
+          // --- MOBILE WEB VERSION (Button) ---
           <>
             <p className="text-gray-400 text-xs mt-1">
               Watch offline with better performance. Download the APK now.
@@ -61,7 +61,7 @@ const ApkPromoToast = ({ onClose }) => {
             </a>
           </>
         ) : (
-          // --- DESKTOP VERSION (Info Only) ---
+          // --- DESKTOP WEB VERSION (Info Only) ---
           <>
             <p className="text-gray-400 text-xs mt-1">
               Experience KigaliStreams on the go! 
@@ -120,16 +120,22 @@ export default function App() {
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
-  // --- SMART PROMO LOGIC ---
+  // --- SMART PROMO LOGIC (Session Based + No iOS) ---
   const [showApkPromo, setShowApkPromo] = useState(false);
 
   useEffect(() => {
     // 1. Check if running on Web (Not Native App)
     const isWeb = !Capacitor.isNativePlatform();
-    // 2. Check if user previously closed it
-    const hasClosedPromo = localStorage.getItem("kigalistreams_promo_closed");
     
-    if (isWeb && !hasClosedPromo) {
+    // 2. Check if user previously closed it IN THIS SESSION
+    // using sessionStorage ensures it shows again if they close/reopen browser
+    const hasClosedPromo = sessionStorage.getItem("kigalistreams_promo_closed");
+
+    // 3. DETECT IOS (iPhone/iPad/iPod)
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    
+    // Logic: Must be Web + Not Closed + NOT iOS
+    if (isWeb && !hasClosedPromo && !isIOS) {
       // Delay slightly so it doesn't pop up instantly
       const timer = setTimeout(() => setShowApkPromo(true), 3000);
       return () => clearTimeout(timer);
@@ -138,7 +144,8 @@ export default function App() {
 
   const closePromo = () => {
     setShowApkPromo(false);
-    localStorage.setItem("kigalistreams_promo_closed", "true");
+    // Save to sessionStorage (clears when browser/tab closes)
+    sessionStorage.setItem("kigalistreams_promo_closed", "true");
   };
 
   // --- NEW: PREVENT PWA INSTALL PROMPT ---
@@ -504,7 +511,7 @@ export default function App() {
 
       {currentViewElement}
 
-      {/* SHOW PROMO IF WEB USER (Mobile gets button, Desktop gets text) */}
+      {/* SHOW PROMO IF WEB USER (Hidden on iOS, Hidden in App) */}
       {showApkPromo && <ApkPromoToast onClose={closePromo} />}
 
     </div>
