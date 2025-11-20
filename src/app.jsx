@@ -10,6 +10,10 @@ import { auth } from "./firebase.js";
 import { getInitialView, getInitialId, Genres } from "./utils.js";
 import { useAdminPassword } from "./hooks/useAdminPassword.js";
 import { useAppState } from "./hooks/useAppState.js";
+import { Capacitor } from "@capacitor/core"; // Make sure this is imported!
+
+// Import Icons
+import { Download, X } from "lucide-react";
 
 // Import Components
 import Header from "./components/Header.jsx";
@@ -24,6 +28,56 @@ import AdminView from "./views/AdminView.jsx";
 import LoginView from "./views/LoginView.jsx";
 import WatchLaterView from "./views/WatchLaterView.jsx";
 import TranslatedFilmsView from "./views/TranslatedFilmsView.jsx";
+
+// --- CONFIGURATION ---
+const APK_DOWNLOAD_URL = "https://github.com/gisaiconfii-boop/kigalistreams-appFILES-APK/releases/download/v1.0/KStreams.apk";
+
+// --- COMPONENT: APK PROMO TOAST (Smart Version) ---
+const ApkPromoToast = ({ onClose }) => {
+  // Check if user is on a mobile screen (width < 768px)
+  const isMobileScreen = window.innerWidth < 768;
+
+  return (
+    <div className="fixed bottom-24 left-4 right-4 md:left-auto md:right-8 md:w-96 z-50 bg-gray-900 border border-amber-500/50 p-4 rounded-xl shadow-2xl shadow-black/50 flex items-start space-x-4 animate-bounce-in">
+      <div className="bg-amber-600/20 p-2 rounded-full shrink-0">
+        <Download size={24} className="text-amber-500" />
+      </div>
+      <div className="flex-1">
+        <h4 className="text-white font-bold text-sm">
+          {isMobileScreen ? "Get the Android App!" : "Mobile App Available"}
+        </h4>
+        
+        {isMobileScreen ? (
+          // --- MOBILE VERSION (Button) ---
+          <>
+            <p className="text-gray-400 text-xs mt-1">
+              Watch offline with better performance. Download the APK now.
+            </p>
+            <a 
+              href={APK_DOWNLOAD_URL}
+              className="mt-3 block w-full bg-amber-600 hover:bg-amber-700 text-white text-center text-xs font-bold py-2 rounded-lg transition"
+            >
+              DOWNLOAD APK
+            </a>
+          </>
+        ) : (
+          // --- DESKTOP VERSION (Info Only) ---
+          <>
+            <p className="text-gray-400 text-xs mt-1">
+              Experience KigaliStreams on the go! 
+            </p>
+            <p className="text-emerald-400 text-xs font-bold mt-2 border-l-2 border-emerald-500 pl-2">
+              Open this site on your Android phone to download the app.
+            </p>
+          </>
+        )}
+      </div>
+      <button onClick={onClose} className="text-gray-500 hover:text-white">
+        <X size={18} />
+      </button>
+    </div>
+  );
+};
 
 // 4. Main App & Router
 export default function App() {
@@ -65,6 +119,27 @@ export default function App() {
   }, []);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  // --- SMART PROMO LOGIC ---
+  const [showApkPromo, setShowApkPromo] = useState(false);
+
+  useEffect(() => {
+    // 1. Check if running on Web (Not Native App)
+    const isWeb = !Capacitor.isNativePlatform();
+    // 2. Check if user previously closed it
+    const hasClosedPromo = localStorage.getItem("kigalistreams_promo_closed");
+    
+    if (isWeb && !hasClosedPromo) {
+      // Delay slightly so it doesn't pop up instantly
+      const timer = setTimeout(() => setShowApkPromo(true), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const closePromo = () => {
+    setShowApkPromo(false);
+    localStorage.setItem("kigalistreams_promo_closed", "true");
+  };
 
   // --- NEW: PREVENT PWA INSTALL PROMPT ---
   useEffect(() => {
@@ -428,6 +503,10 @@ export default function App() {
       />
 
       {currentViewElement}
+
+      {/* SHOW PROMO IF WEB USER (Mobile gets button, Desktop gets text) */}
+      {showApkPromo && <ApkPromoToast onClose={closePromo} />}
+
     </div>
   );
 }
