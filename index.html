@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
-    
     <meta name="google-site-verification" content="aYq2qtCmG9v_PbMooE8rT9XJOilnJ20gOFEHuDqjOfI" />
     
     <title>KigaliStreams - Watch Interpreted Movies (Agasobanuye) in Rwanda</title>
@@ -13,7 +12,6 @@
     <meta name="keywords" content="Kigali Streams, Agasobanuye, Kinyarwanda Movies, Rwanda Cinema, Rocky Kimomo, Yanga, Junior, Rwanda TV" />
 
     <link rel="manifest" href="/site.webmanifest"> 
-
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
@@ -25,7 +23,6 @@
     <meta name="theme-color" content="#000000" /> 
 
     <script>
-      // Instant Dark Mode Script
       (function() {
         try {
           const theme = localStorage.getItem('theme');
@@ -41,11 +38,39 @@
     <script type="module" src="/src/main.jsx"></script>
 
     <script>
-        console.log("Index.html loaded. Waiting for React...");
-        window.addEventListener('load', () => {
-            console.log("Window fully loaded.");
-        });
-    </script>
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          console.log("KigaliStreams loaded. Injecting ads safely in background...");
 
-    </body>
+          // 1. Gizokraijaw (Vignette Ad)
+          try {
+            (function(s){
+              s.dataset.zone='10182193';
+              s.src='https://gizokraijaw.net/vignette.min.js';
+              document.body.appendChild(s);
+            })(document.createElement('script'));
+          } catch(e) { console.log("Ad 1 blocked"); }
+
+          // 2. 3nbf4 (Tag Ad)
+          try {
+            var tagScript = document.createElement('script');
+            tagScript.src = "https://3nbf4.com/act/files/tag.min.js?z=10173715";
+            tagScript.setAttribute('data-cfasync', 'false');
+            tagScript.async = true;
+            document.body.appendChild(tagScript);
+          } catch(e) { console.log("Ad 2 blocked"); }
+
+          // 3. al5sm (Tag Ad)
+          try {
+            (function(s){
+              s.dataset.zone='10189306';
+              s.src='https://al5sm.com/tag.min.js';
+              document.body.appendChild(s);
+            })(document.createElement('script'));
+          } catch(e) { console.log("Ad 3 blocked"); }
+
+        }, 3000); // 3000ms = 3 Seconds Delay
+      });
+    </script>
+  </body>
 </html>
