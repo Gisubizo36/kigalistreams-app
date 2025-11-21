@@ -38,7 +38,6 @@ const HomeView = ({
     const recentItems = sortedContent.slice(0, 10);
     const combined = [...trendingItems, ...recentItems];
     const uniqueItems = Array.from(new Map(combined.map(item => [item.id, item])).values());
-    // Ensure we have enough items for the loop
     if (uniqueItems.length === 0) return [];
     let pool = [...uniqueItems];
     while (pool.length < 5) {
@@ -64,7 +63,7 @@ const HomeView = ({
     if (baseHeroItems.length <= 1) return;
     const interval = setInterval(() => {
       setCurrentCircleIndex((prev) => (prev + 1) % baseHeroItems.length);
-    }, 5000); // Adjusted speed to 5s for better UX
+    }, 5000);
     return () => clearInterval(interval);
   }, [baseHeroItems.length]);
 
@@ -87,34 +86,33 @@ const HomeView = ({
       >
         <div className="absolute inset-0 bg-black/60"></div>
 
-        {/* --- NEW MOBILE HERO SECTION (MATCHING YOUR SKETCH) --- */}
+        {/* --- NEW MOBILE HERO SECTION --- */}
         <div className="relative z-10 w-full pt-6 pb-4 lg:hidden">
           <div className="container mx-auto px-4 relative h-56 sm:h-64">
             
-            {/* 1. Vertical Line Separator (From Sketch) */}
+            {/* 1. Vertical Line Separator */}
             <div className="absolute right-[28%] top-2 bottom-2 w-px bg-gray-500/50 z-0"></div>
 
-            {/* 2. The "K S" Letters (From Sketch) */}
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col items-center space-y-1 z-0 select-none opacity-80">
-              <span className="text-5xl font-black text-gray-600/50 leading-none" style={{fontFamily: 'monospace'}}>K</span>
-              <span className="text-5xl font-black text-amber-600/50 leading-none" style={{fontFamily: 'monospace'}}>S</span>
+            {/* 2. The "K S" Letters */}
+            {/* COLOR: text-white/20 (Transparent white) | FONT: Algerian */}
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col items-center space-y-1 z-0 select-none">
+              <span className="text-5xl font-bold text-white/20 leading-none" style={{fontFamily: 'Algerian, serif'}}>K</span>
+              <span className="text-5xl font-bold text-white/20 leading-none" style={{fontFamily: 'Algerian, serif'}}>S</span>
             </div>
 
             {/* 3. The Slider Items */}
             {baseHeroItems.length > 0 ? (
               baseHeroItems.map((item, index) => {
                 const length = baseHeroItems.length;
-                // Calculate offset relative to current index
-                // 0 = Active (Big), 1 = Next (Small), others hidden
                 let offset = (index - currentCircleIndex + length) % length;
                 
-                // Optimization: Only render items involved in the transition (prev, current, next)
-                // to keep DOM light, but keep enough for smooth exit animations
                 if (offset > 2 && offset < length - 1) return null;
 
                 // Base styles
                 let wrapperClass = "absolute rounded-xl overflow-hidden transition-all duration-700 ease-in-out shadow-2xl";
-                let contentClass = "w-full h-full object-cover";
+                
+                // --- UPDATED IMAGE POSITION: object-[center_20%] (Upper Middle) ---
+                let contentClass = "w-full h-full object-cover object-[center_20%]";
                 
                 // --- STATE 1: BIG PICTURE (Left) ---
                 if (offset === 0) {
@@ -124,7 +122,7 @@ const HomeView = ({
                 else if (offset === 1) {
                   wrapperClass += " top-[25%] right-[12%] w-[18%] h-[50%] z-10 opacity-80 grayscale-[30%] hover:grayscale-0";
                 }
-                // --- STATE 3: EXITING/HIDDEN (Far Left or Far Right) ---
+                // --- STATE 3: EXITING ---
                 else {
                   wrapperClass += " top-[25%] -left-[20%] w-[10%] h-[50%] z-0 opacity-0";
                 }
@@ -150,9 +148,18 @@ const HomeView = ({
                 );
               })
             ) : (
-              // Skeleton Loading
               <div className="w-[68%] h-full bg-gray-800 animate-pulse rounded-xl border border-gray-700"></div>
             )}
+          </div>
+
+          {/* 4. Text Below Slider (With Spacing) */}
+          <div className="container mx-auto px-4 mt-8 text-center z-10 relative">
+            <h1 className="text-3xl font-extrabold text-white leading-tight mb-1 drop-shadow-md">
+              Unlimited Movies.
+            </h1>
+            <p className="text-sm text-gray-300 font-medium">
+              Watch anywhere. Interpreted for you.
+            </p>
           </div>
         </div>
 
