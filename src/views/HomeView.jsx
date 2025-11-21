@@ -33,7 +33,7 @@ const HomeView = ({
     [sortedContent]
   );
 
-  // --- UPDATED: ITEMS FOR MOBILE CIRCULAR SLIDER ---
+  // --- ITEMS FOR MOBILE CIRCULAR SLIDER ---
   const baseHeroItems = useMemo(() => {
     const recentItems = sortedContent.slice(0, 10);
     const combined = [...trendingItems, ...recentItems];
@@ -60,12 +60,12 @@ const HomeView = ({
     return duplicatedItems;
   }, [trendingItems, sortedContent]);
 
-  // --- UPDATED: 9 SECOND INTERVAL ---
+  // --- 9 SECOND INTERVAL ---
   useEffect(() => {
     if (baseHeroItems.length <= 1) return;
     const interval = setInterval(() => {
       setCurrentCircleIndex((prev) => (prev + 1) % baseHeroItems.length);
-    }, 9000); // <--- CHANGED TO 9000 (9 Seconds)
+    }, 9000);
     return () => clearInterval(interval);
   }, [baseHeroItems.length]);
 
@@ -88,7 +88,7 @@ const HomeView = ({
       >
         <div className="absolute inset-0 bg-black/60"></div>
 
-        {/* --- MOBILE HERO SECTION (UPDATED "EGG" SLIDER) --- */}
+        {/* --- MOBILE HERO SECTION (RGB EGG SLIDER) --- */}
         <div className="relative z-10 container mx-auto pt-8 lg:hidden">
           <div className="relative w-full h-80 flex items-center justify-center overflow-hidden">
             {baseHeroItems.length > 0 ? (
@@ -99,13 +99,16 @@ const HomeView = ({
 
                 if (position < -1 || position > 1) return null;
 
-                let itemClass = "z-10 scale-90 opacity-50 grayscale-[50%]";
+                // Default style for side items (faded, grayscale)
+                let itemClass = "z-10 scale-90 opacity-50 grayscale-[80%]";
                 let translateClass = "";
-
+                
+                // --- RGB BORDER TRICK ---
+                // We use padding (p-[3px]) to simulate border thickness
+                // The background gradient (bg-gradient-to-tr) shows through the padding
                 if (position === 0) {
-                  // --- UPDATED CENTER STYLE: Multi-color Glow + Full Opacity ---
                   itemClass =
-                    "z-20 scale-110 opacity-100 border-2 border-amber-400 grayscale-0 shadow-[0_0_20px_rgba(245,158,11,0.6),0_0_40px_rgba(168,85,247,0.5),0_0_60px_rgba(6,182,212,0.5)]";
+                    "z-20 scale-110 opacity-100 grayscale-0 p-[3px] bg-gradient-to-tr from-red-600 via-green-500 to-blue-600";
                   translateClass = "translate-x-0";
                 } else if (position === -1) {
                   translateClass = "-translate-x-[85%]";
@@ -116,26 +119,27 @@ const HomeView = ({
                 return (
                   <div
                     key={`${item.id}-${index}`}
-                    // --- UPDATED SHAPE: w-52 h-64 + rounded-full = Vertical Oval ("Egg") ---
+                    // The container provides the RGB Gradient Background
                     className={`absolute w-52 h-64 rounded-full overflow-hidden transition-all duration-1000 ease-in-out cursor-pointer bg-gray-900 ${itemClass} ${translateClass}`}
                     onClick={() => navigate("detail", item.id)}
                   >
+                    {/* The image sits ON TOP of the gradient, leaving only the edge visible */}
                     <img
                       src={
                         item.thumbnail ||
                         `https://placehold.co/400x400/1f2937/fff?text=${encodeURIComponent(item.title)}`
                       }
                       alt={item.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover rounded-full bg-gray-900"
                     />
                   </div>
                 );
               })
             ) : (
-              // --- UPDATED "EGG" SKELETON ---
+              // --- UPDATED SKELETON ---
               <div className="relative w-full h-full flex items-center justify-center">
                 <div className="absolute w-52 h-64 rounded-full bg-gray-800 -translate-x-[85%] scale-90 opacity-50 animate-pulse"></div>
-                <div className="absolute w-52 h-64 rounded-full bg-gray-700 z-20 scale-110 border-2 border-gray-600 animate-pulse shadow-xl"></div>
+                <div className="absolute w-52 h-64 rounded-full bg-gray-700 z-20 scale-110 border-2 border-gray-600 animate-pulse"></div>
                 <div className="absolute w-52 h-64 rounded-full bg-gray-800 translate-x-[85%] scale-90 opacity-50 animate-pulse"></div>
               </div>
             )}
