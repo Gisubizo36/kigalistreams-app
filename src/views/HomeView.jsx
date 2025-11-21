@@ -163,16 +163,22 @@ const HomeView = ({
           </div>
         </div>
 
-        {/* DESKTOP HERO SECTION (UNCHANGED) */}
+        {/* DESKTOP HERO SECTION (FIXED TEXT COLORS) */}
         <div className="hidden lg:block container mx-auto px-4 sm:px-6 pb-12 lg:pb-0 lg:h-full lg:flex lg:items-center">
           <div className="flex-1 max-w-lg text-center lg:text-left pt-4 lg:pt-0">
             <h1
               className="text-4xl md:text-5xl font-extrabold text-white leading-tight mb-4"
-              style={{ textShadow: "2px 2px 8px rgba(0,0,0,0.7)" }}
+              style={{ 
+                textShadow: "2px 2px 8px rgba(0,0,0,0.7)",
+                color: "white" // Forces white text
+              }}
             >
               Unlimited Movies, TV Shows, and More.
             </h1>
-            <p className="text-lg md:text-xl text-gray-200">
+            <p 
+              className="text-lg md:text-xl text-gray-200"
+              style={{ color: "#e5e7eb" }} // Forces light gray text
+            >
               Watch anywhere. Interpreted for you in Kinyarwanda.
             </p>
           </div>
