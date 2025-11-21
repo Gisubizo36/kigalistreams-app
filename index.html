@@ -35,40 +35,17 @@
         } catch (e) {}
       })();
     </script>
-    
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
 
     <script>
-      window.addEventListener('load', function() {
-        setTimeout(function() {
-          console.log("Page loaded. Injecting ad scripts safely...");
-
-          // 1. Gizokraijaw Script
-          (function(s){
-            s.dataset.zone='10182193';
-            s.src='https://gizokraijaw.net/vignette.min.js';
-            document.body.appendChild(s);
-          })(document.createElement('script'));
-
-          // 2. 3nbf4.com Script
-          var tagScript = document.createElement('script');
-          tagScript.src = "https://3nbf4.com/act/files/tag.min.js?z=10173715";
-          tagScript.setAttribute('data-cfasync', 'false');
-          tagScript.async = true;
-          document.body.appendChild(tagScript);
-
-          // 3. al5sm.com Script
-          (function(s){
-            s.dataset.zone='10189306';
-            s.src='https://al5sm.com/tag.min.js';
-            document.body.appendChild(s);
-          })(document.createElement('script'));
-
-        }, 500); // 500ms delay to prioritize React rendering
-      });
+        console.log("Index.html loaded. Waiting for React...");
+        window.addEventListener('load', () => {
+            console.log("Window fully loaded.");
+        });
     </script>
-  </body>
+
+    </body>
 </html>
