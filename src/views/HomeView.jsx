@@ -84,9 +84,10 @@ const HomeView = ({
           backgroundImage: "url(https://images.pexels.com/photos/109669/pexels-photo-109669.jpeg)",
         }}
       >
+        {/* This overlay makes the background dark */}
         <div className="absolute inset-0 bg-black/60"></div>
 
-        {/* --- NEW MOBILE HERO SECTION --- */}
+        {/* --- MOBILE HERO SECTION --- */}
         <div className="relative z-10 w-full pt-6 pb-4 lg:hidden">
           <div className="container mx-auto px-4 relative h-56 sm:h-64">
             
@@ -94,7 +95,6 @@ const HomeView = ({
             <div className="absolute right-[28%] top-2 bottom-2 w-px bg-gray-500/50 z-0"></div>
 
             {/* 2. The "K S" Letters */}
-            {/* COLOR: text-white/20 (Transparent white) | FONT: Algerian */}
             <div className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col items-center space-y-1 z-0 select-none">
               <span className="text-5xl font-bold text-white/20 leading-none" style={{fontFamily: 'Algerian, serif'}}>K</span>
               <span className="text-5xl font-bold text-white/20 leading-none" style={{fontFamily: 'Algerian, serif'}}>S</span>
@@ -152,7 +152,7 @@ const HomeView = ({
             )}
           </div>
 
-          {/* 4. Text Below Slider (With Spacing) */}
+          {/* 4. Text Below Slider */}
           <div className="container mx-auto px-4 mt-8 text-center z-10 relative">
             <h1 className="text-3xl font-extrabold text-white leading-tight mb-1 drop-shadow-md">
               Unlimited Movies.
@@ -163,21 +163,22 @@ const HomeView = ({
           </div>
         </div>
 
-        {/* DESKTOP HERO SECTION (FIXED TEXT COLORS) */}
-        <div className="hidden lg:block container mx-auto px-4 sm:px-6 pb-12 lg:pb-0 lg:h-full lg:flex lg:items-center">
+        {/* --- DESKTOP HERO SECTION (FIXED) --- */}
+        {/* Added 'relative z-10' here so text sits above the black overlay */}
+        <div className="hidden lg:block container mx-auto px-4 sm:px-6 pb-12 lg:pb-0 lg:h-full lg:flex lg:items-center relative z-10">
           <div className="flex-1 max-w-lg text-center lg:text-left pt-4 lg:pt-0">
             <h1
               className="text-4xl md:text-5xl font-extrabold text-white leading-tight mb-4"
               style={{ 
                 textShadow: "2px 2px 8px rgba(0,0,0,0.7)",
-                color: "white" // Forces white text
+                color: "white" 
               }}
             >
               Unlimited Movies, TV Shows, and More.
             </h1>
             <p 
               className="text-lg md:text-xl text-gray-200"
-              style={{ color: "#e5e7eb" }} // Forces light gray text
+              style={{ color: "#e5e7eb" }}
             >
               Watch anywhere. Interpreted for you in Kinyarwanda.
             </p>
