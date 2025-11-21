@@ -30,7 +30,7 @@ function Header({
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   // --- NEW STATE FOR iOS DETECTION ---
   const [isIOS, setIsIOS] = useState(false);
-  
+
   const profileMenuRef = useRef(null);
   const headerRef = useRef(null);
 
@@ -169,18 +169,19 @@ function Header({
               <BookOpen size={20} className="inline mr-1" /> Interpreted
             </button>
             <button
-  onClick={() => navigate("request")}
-  className={`hidden md:block p-2 rounded-lg transition-colors ${
-    view === "request"
-      ? `bg-amber-600`
-      : theme === "dark"
-      ? "hover:bg-gray-700"
-      : "hover:bg-gray-200"
-  }`}
-  title="Comments & Ideas"
->
-  <MessageSquare size={20} className="inline mr-1" /> Comments & Ideas
-</button>
+              onClick={() => navigate("request")}
+              className={`hidden md:block p-2 rounded-lg transition-colors ${
+                view === "request"
+                  ? `bg-amber-600`
+                  : theme === "dark"
+                  ? "hover:bg-gray-700"
+                  : "hover:bg-gray-200"
+              }`}
+              title="Comments & Ideas"
+            >
+              <MessageSquare size={20} className="inline mr-1" /> Comments &
+              Ideas
+            </button>
 
             <div className="hidden lg:relative lg:block group">
               <button
@@ -410,8 +411,8 @@ function Header({
                     : "Login / Sign Up"
                   : item === "translated"
                   ? "Interpreted"
-                  : item === "request"  
-    ? "Comments & Ideas"
+                  : item === "request"
+                  ? "Comments & Ideas"
                   : item}
               </button>
             ))}
@@ -419,12 +420,13 @@ function Header({
             {/* ONLY SHOW DOWNLOAD BUTTON IF NOT ON IPHONE */}
             {!isIOS && (
               <a
-                href="https://github.com/gisaiconfii-boop/kigalistreams-appFILES-APK/releases/download/v1.0/KSTREAM.apk"
+                href="https://github.com/gisaiconfii-boop/kigalistreams-appFILES-APK/releases/download/v1.0/KSTRMS.apk"
                 download
                 onClick={() => setIsMenuOpen(false)}
                 className={`block w-full text-left p-3 rounded-lg text-lg font-medium transition-colors bg-green-600 text-white hover:bg-green-700 flex items-center`}
               >
-                <Download size={20} className="inline mr-3" /> Download Android App
+                <Download size={20} className="inline mr-3" /> Download Android
+                App
               </a>
             )}
 
