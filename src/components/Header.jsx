@@ -417,7 +417,7 @@ function Header({
             {/* ONLY SHOW DOWNLOAD BUTTON IF NOT ON IPHONE */}
             {!isIOS && (
               <a
-                href="https://github.com/gisaiconfii-boop/kigalistreams-appFILES-APK/releases/download/v1.0/KStreams.apk"
+                href="https://github.com/gisaiconfii-boop/kigalistreams-appFILES-APK/releases/download/v1.0/KSTREAM.apk"
                 download
                 onClick={() => setIsMenuOpen(false)}
                 className={`block w-full text-left p-3 rounded-lg text-lg font-medium transition-colors bg-green-600 text-white hover:bg-green-700 flex items-center`}
