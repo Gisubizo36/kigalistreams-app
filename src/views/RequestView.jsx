@@ -9,7 +9,7 @@ import {
   setDoc,
   deleteDoc,
 } from "firebase/firestore";
-import { Hash, User } from "lucide-react";
+import { Hash, User, MessageSquare } from "lucide-react";
 
 const RequestView = ({ navigate, authStatus, userProfile }) => {
   const [requests, setRequests] = useState([]);
@@ -35,7 +35,7 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
       },
       (error) => {
         console.error("Error fetching requests:", error);
-        setMessage("Error: Could not load requests.");
+        setMessage("Error: Could not load comments.");
         setIsLoading(false);
       }
     );
@@ -45,11 +45,11 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newRequest.trim()) {
-      setMessage("Error: Please write a request before submitting.");
+      setMessage("Error: Please write a comment before submitting.");
       return;
     }
     if (authStatus.user.isAnonymous) {
-      setMessage("Error: You must be logged in to make a request.");
+      setMessage("Error: You must be logged in to post.");
       return;
     }
 
@@ -71,9 +71,9 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
       const newDocRef = doc(getRequestsCollectionRef(db));
       await setDoc(newDocRef, requestData);
       setNewRequest("");
-      setMessage("Success! Your request has been posted.");
+      setMessage("Success! Your comment has been posted.");
     } catch (error) {
-      console.error("Error posting request:", error);
+      console.error("Error posting comment:", error);
       setMessage(`Error: ${error.message}`);
     } finally {
       setIsPosting(false);
@@ -95,10 +95,10 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
     try {
       const docRef = doc(getRequestsCollectionRef(db), requestId);
       await deleteDoc(docRef);
-      setMessage("Success: Request deleted.");
+      setMessage("Success: Comment deleted.");
     } catch (error) {
-      console.error("Error deleting request:", error);
-      setMessage(`Error: Could not delete request. ${error.message}`);
+      console.error("Error deleting comment:", error);
+      setMessage(`Error: Could not delete comment. ${error.message}`);
     }
   };
 
@@ -114,7 +114,7 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
     if (requests.length === 0) {
       return (
         <p className="text-gray-400 text-center py-8">
-          No requests have been made yet. Be the first!
+          No comments have been posted yet. Be the first!
         </p>
       );
     }
@@ -140,7 +140,7 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
                   <button
                     onClick={() => handleDeleteRequest(req.id)}
                     className="text-red-500 hover:text-red-400 text-xs font-semibold"
-                    title="Delete Request"
+                    title="Delete Comment"
                   >
                     Delete
                   </button>
@@ -162,16 +162,17 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
       ></div>
       <div className="relative z-10 container mx-auto py-8 px-4 sm:px-6 max-w-2xl">
         <div className="bg-gray-800 p-6 sm:p-8 rounded-xl shadow-2xl">
-          <h1 className="text-3xl font-bold text-white mb-4 text-center">
-            Movie & TV Show Requests
+          <h1 className="text-3xl font-bold text-white mb-4 text-center flex items-center justify-center gap-3">
+            <MessageSquare size={32} className="text-amber-500" />
+            Comments & Ideas
           </h1>
           <p className="text-gray-400 mb-6 text-center">
-            See what others have requested or add your own.
+            Share your feedback, suggest features, or request movies.
           </p>
 
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-white mb-4">
-              Community Requests
+              Community Discussion
             </h2>
             {renderContent()}
           </div>
@@ -180,7 +181,7 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
             {authStatus.user && !authStatus.user.isAnonymous ? (
               <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
                 <h3 className="text-lg font-semibold text-white">
-                  Post a new request
+                  Post a comment
                 </h3>
                 <div>
                   <textarea
@@ -189,7 +190,7 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
                     onKeyDown={handleKeyDown}
                     rows="4"
                     className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500 focus:ring-emerald-500"
-                    placeholder="I'd love to see 'The Matrix' translated by Rocky..."
+                    placeholder="What's on your mind? New movie request or app feedback..."
                   />
                 </div>
                 {message && (
@@ -213,14 +214,14 @@ const RequestView = ({ navigate, authStatus, userProfile }) => {
                   {isPosting ? (
                     <Hash size={20} className="animate-spin" />
                   ) : (
-                    "Submit Request"
+                    "Post Comment"
                   )}
                 </button>
               </form>
             ) : (
               <div className="text-center p-6 bg-gray-700/50 rounded-lg">
                 <p className="text-lg text-gray-300 mb-4">
-                  You must be logged in to post a request.
+                  You must be logged in to post comments.
                 </p>
                 <button
                   onClick={() => navigate("admin")}

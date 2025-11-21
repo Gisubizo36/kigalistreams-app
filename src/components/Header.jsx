@@ -10,7 +10,7 @@ import {
   BookOpen,
   ChevronDown,
   Download,
-  PlusCircle,
+  MessageSquare,
 } from "lucide-react";
 
 function Header({
@@ -169,18 +169,18 @@ function Header({
               <BookOpen size={20} className="inline mr-1" /> Interpreted
             </button>
             <button
-              onClick={() => navigate("request")}
-              className={`hidden md:block p-2 rounded-lg transition-colors ${
-                view === "request"
-                  ? `bg-amber-600`
-                  : theme === "dark"
-                  ? "hover:bg-gray-700"
-                  : "hover:bg-gray-200"
-              }`}
-              title="Request a Movie"
-            >
-              <PlusCircle size={20} className="inline mr-1" /> Request Movie
-            </button>
+  onClick={() => navigate("request")}
+  className={`hidden md:block p-2 rounded-lg transition-colors ${
+    view === "request"
+      ? `bg-amber-600`
+      : theme === "dark"
+      ? "hover:bg-gray-700"
+      : "hover:bg-gray-200"
+  }`}
+  title="Comments & Ideas"
+>
+  <MessageSquare size={20} className="inline mr-1" /> Comments & Ideas
+</button>
 
             <div className="hidden lg:relative lg:block group">
               <button
@@ -410,6 +410,8 @@ function Header({
                     : "Login / Sign Up"
                   : item === "translated"
                   ? "Interpreted"
+                  : item === "request"  
+    ? "Comments & Ideas"
                   : item}
               </button>
             ))}

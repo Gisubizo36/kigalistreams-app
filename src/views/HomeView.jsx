@@ -33,19 +33,18 @@ const HomeView = ({
     [sortedContent]
   );
 
-  // --- ITEMS FOR MOBILE CIRCULAR SLIDER ---
+  // --- ITEMS FOR MOBILE SLIDER ---
   const baseHeroItems = useMemo(() => {
     const recentItems = sortedContent.slice(0, 10);
     const combined = [...trendingItems, ...recentItems];
     const uniqueItems = Array.from(new Map(combined.map(item => [item.id, item])).values());
-    const shuffled = uniqueItems.sort(() => 0.5 - Math.random());
-    
-    let pool = [...shuffled];
-    if (pool.length === 0) return [];
-    while (pool.length < 12) {
-      pool = [...pool, ...shuffled];
+    // Ensure we have enough items for the loop
+    if (uniqueItems.length === 0) return [];
+    let pool = [...uniqueItems];
+    while (pool.length < 5) {
+      pool = [...pool, ...uniqueItems];
     }
-    return pool.slice(0, 24);
+    return pool.slice(0, 15);
   }, [trendingItems, sortedContent]);
 
   const heroItems = useMemo(() => {
@@ -60,12 +59,12 @@ const HomeView = ({
     return duplicatedItems;
   }, [trendingItems, sortedContent]);
 
-  // --- 9 SECOND INTERVAL ---
+  // --- 5 SECOND INTERVAL FOR SLIDE ---
   useEffect(() => {
     if (baseHeroItems.length <= 1) return;
     const interval = setInterval(() => {
       setCurrentCircleIndex((prev) => (prev + 1) % baseHeroItems.length);
-    }, 9000);
+    }, 5000); // Adjusted speed to 5s for better UX
     return () => clearInterval(interval);
   }, [baseHeroItems.length]);
 
@@ -88,66 +87,77 @@ const HomeView = ({
       >
         <div className="absolute inset-0 bg-black/60"></div>
 
-        {/* --- MOBILE HERO SECTION (RGB EGG SLIDER) --- */}
-        <div className="relative z-10 container mx-auto pt-8 lg:hidden">
-          <div className="relative w-full h-80 flex items-center justify-center overflow-hidden">
+        {/* --- NEW MOBILE HERO SECTION (MATCHING YOUR SKETCH) --- */}
+        <div className="relative z-10 w-full pt-6 pb-4 lg:hidden">
+          <div className="container mx-auto px-4 relative h-56 sm:h-64">
+            
+            {/* 1. Vertical Line Separator (From Sketch) */}
+            <div className="absolute right-[28%] top-2 bottom-2 w-px bg-gray-500/50 z-0"></div>
+
+            {/* 2. The "K S" Letters (From Sketch) */}
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col items-center space-y-1 z-0 select-none opacity-80">
+              <span className="text-5xl font-black text-gray-600/50 leading-none" style={{fontFamily: 'monospace'}}>K</span>
+              <span className="text-5xl font-black text-amber-600/50 leading-none" style={{fontFamily: 'monospace'}}>S</span>
+            </div>
+
+            {/* 3. The Slider Items */}
             {baseHeroItems.length > 0 ? (
               baseHeroItems.map((item, index) => {
                 const length = baseHeroItems.length;
-                let position = (index - currentCircleIndex + length) % length;
-                if (position > length / 2) position -= length;
-
-                if (position < -1 || position > 1) return null;
-
-                // Default style for side items (faded, grayscale)
-                let itemClass = "z-10 scale-90 opacity-50 grayscale-[80%]";
-                let translateClass = "";
+                // Calculate offset relative to current index
+                // 0 = Active (Big), 1 = Next (Small), others hidden
+                let offset = (index - currentCircleIndex + length) % length;
                 
-                // --- RGB BORDER TRICK ---
-                // We use padding (p-[3px]) to simulate border thickness
-                // The background gradient (bg-gradient-to-tr) shows through the padding
-                if (position === 0) {
-                  itemClass =
-                    "z-20 scale-110 opacity-100 grayscale-0 p-[3px] bg-gradient-to-tr from-red-600 via-green-500 to-blue-600";
-                  translateClass = "translate-x-0";
-                } else if (position === -1) {
-                  translateClass = "-translate-x-[85%]";
-                } else if (position === 1) {
-                  translateClass = "translate-x-[85%]";
+                // Optimization: Only render items involved in the transition (prev, current, next)
+                // to keep DOM light, but keep enough for smooth exit animations
+                if (offset > 2 && offset < length - 1) return null;
+
+                // Base styles
+                let wrapperClass = "absolute rounded-xl overflow-hidden transition-all duration-700 ease-in-out shadow-2xl";
+                let contentClass = "w-full h-full object-cover";
+                
+                // --- STATE 1: BIG PICTURE (Left) ---
+                if (offset === 0) {
+                  wrapperClass += " top-0 left-0 w-[68%] h-full z-20 opacity-100 border border-gray-600";
+                } 
+                // --- STATE 2: SMALL PICTURE (Right) ---
+                else if (offset === 1) {
+                  wrapperClass += " top-[25%] right-[12%] w-[18%] h-[50%] z-10 opacity-80 grayscale-[30%] hover:grayscale-0";
+                }
+                // --- STATE 3: EXITING/HIDDEN (Far Left or Far Right) ---
+                else {
+                  wrapperClass += " top-[25%] -left-[20%] w-[10%] h-[50%] z-0 opacity-0";
                 }
 
                 return (
                   <div
-                    key={`${item.id}-${index}`}
-                    // The container provides the RGB Gradient Background
-                    className={`absolute w-52 h-64 rounded-full overflow-hidden transition-all duration-1000 ease-in-out cursor-pointer bg-gray-900 ${itemClass} ${translateClass}`}
-                    onClick={() => navigate("detail", item.id)}
+                    key={item.id}
+                    className={wrapperClass}
+                    onClick={() => offset === 0 && navigate("detail", item.id)}
                   >
-                    {/* The image sits ON TOP of the gradient, leaving only the edge visible */}
                     <img
-                      src={
-                        item.thumbnail ||
-                        `https://placehold.co/400x400/1f2937/fff?text=${encodeURIComponent(item.title)}`
-                      }
+                      src={item.thumbnail || `https://placehold.co/400x600/1f2937/fff?text=${encodeURIComponent(item.title)}`}
                       alt={item.title}
-                      className="w-full h-full object-cover rounded-full bg-gray-900"
+                      className={contentClass}
                     />
+                    {offset === 0 && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-3">
+                        <h3 className="text-white font-bold text-sm sm:text-base truncate">{item.title}</h3>
+                        <p className="text-amber-400 text-xs font-semibold mt-0.5">Trending Now</p>
+                      </div>
+                    )}
                   </div>
                 );
               })
             ) : (
-              // --- UPDATED SKELETON ---
-              <div className="relative w-full h-full flex items-center justify-center">
-                <div className="absolute w-52 h-64 rounded-full bg-gray-800 -translate-x-[85%] scale-90 opacity-50 animate-pulse"></div>
-                <div className="absolute w-52 h-64 rounded-full bg-gray-700 z-20 scale-110 border-2 border-gray-600 animate-pulse"></div>
-                <div className="absolute w-52 h-64 rounded-full bg-gray-800 translate-x-[85%] scale-90 opacity-50 animate-pulse"></div>
-              </div>
+              // Skeleton Loading
+              <div className="w-[68%] h-full bg-gray-800 animate-pulse rounded-xl border border-gray-700"></div>
             )}
           </div>
         </div>
 
         {/* DESKTOP HERO SECTION (UNCHANGED) */}
-        <div className="relative z-10 container mx-auto px-4 sm:px-6 pb-12 lg:pb-0 lg:h-full lg:flex lg:items-center">
+        <div className="hidden lg:block container mx-auto px-4 sm:px-6 pb-12 lg:pb-0 lg:h-full lg:flex lg:items-center">
           <div className="flex-1 max-w-lg text-center lg:text-left pt-4 lg:pt-0">
             <h1
               className="text-4xl md:text-5xl font-extrabold text-white leading-tight mb-4"
