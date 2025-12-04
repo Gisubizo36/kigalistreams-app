@@ -35,8 +35,9 @@ const DetailView = ({
   const [currentPlaybackTime, setCurrentPlaybackTime] = useState(initialTime);
   const [message, setMessage] = useState("");
 
-  // FIX: Load Trailer immediately if exists, so native YouTube button appears
+  // FIX: DO NOT auto-load Rwandan movies. Let them start as NULL so thumbnail shows.
   const initialVideo = useMemo(() => {
+    // Only auto-load if it's strictly a trailer
     if (item && item.trailerLink) {
       return {
         link: item.trailerLink,
@@ -114,7 +115,7 @@ const DetailView = ({
     setMessage("");
     
     // --- RWANDAN MOVIE LOGIC ---
-    // If it's a Rwandan movie, we play it internally (like a trailer)
+    // If it's a Rwandan movie, we play it internally
     if (item.category === "Rwandan" && item.movieLink) {
         setCurrentVideo({
             link: item.movieLink,
@@ -123,7 +124,6 @@ const DetailView = ({
             subtitleUrl: null,
             initialTime: 0,
         });
-        window.scrollTo(0,0);
         return;
     }
     // ---------------------------
@@ -151,13 +151,11 @@ const DetailView = ({
       (externalLink.startsWith("http://") ||
         externalLink.startsWith("https://"))
     ) {
-      // Ad Pop-under
       window.open(
         "https://otieu.com/4/10173729",
         "_blank",
         "noopener,noreferrer"
       );
-      // Redirect
       window.location.href = externalLink;
     } else {
       setMessage("Error: The provided link is not valid or was not found.");
@@ -197,7 +195,7 @@ const DetailView = ({
           <ArrowLeft size={20} className="mr-1" /> Back to Home
         </button>
 
-        {/* --- VIDEO PLAYER: RESTRICTED WIDTH --- */}
+        {/* --- VIDEO PLAYER AREA --- */}
         <div className="max-w-4xl mx-auto">
             {currentVideo.link ? (
             <VideoPlayer
@@ -214,18 +212,43 @@ const DetailView = ({
                 }
             />
             ) : (
-            <div className="relative w-full aspect-video bg-gray-800 rounded-xl flex items-center justify-center text-gray-400 text-lg overflow-hidden">
+            <div className="relative w-full aspect-video bg-gray-800 rounded-xl flex items-center justify-center text-gray-400 text-lg overflow-hidden group">
+                {/* THUMBNAIL */}
                 <img
                 src={
+                    item.backdropImage || 
                     item.thumbnail ||
                     `https://placehold.co/1280x720/1f2937/fff?text=${encodeURIComponent(
                     item.title
                     )}`
                 }
                 alt={item.title}
-                className="w-full h-full object-cover opacity-50"
+                className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity"
                 />
-                <p>No Video Available</p>
+
+                {/* --- OVERLAY PLAY BUTTON FOR RWANDAN CONTENT --- */}
+                {item.category === "Rwandan" ? (
+                    <button
+                        onClick={() => playMovie(currentEpisode)}
+                        className="absolute inset-0 flex items-center justify-center bg-transparent"
+                    >
+                        <div className="w-20 h-20 bg-amber-600 rounded-full flex items-center justify-center shadow-2xl shadow-amber-600/50 transform transition hover:scale-110">
+                             <Play size={40} className="text-white ml-1" fill="currentColor" />
+                        </div>
+                    </button>
+                ) : (
+                    // OPTIONAL: SHOW PLAY TRAILER BUTTON FOR INTERNATIONAL IF NO TRAILER AUTOLOAD
+                   item.trailerLink && (
+                    <button
+                        onClick={playTrailer}
+                        className="absolute inset-0 flex items-center justify-center"
+                    >
+                        <div className="w-20 h-14 bg-red-600/90 rounded-xl flex items-center justify-center shadow-lg transition hover:scale-110 group">
+                            <Play size={40} className="text-white" fill="currentColor" />
+                        </div>
+                    </button>
+                   )
+                )}
             </div>
             )}
         </div>
@@ -241,19 +264,13 @@ const DetailView = ({
                 {item.title}
               </h1>
               
-              {/* --- WATCH LATER TOGGLE FIX --- */}
               <button
                 onClick={() => toggleWatchLater(contentId)}
                 className={`flex items-center p-3 rounded-full transition text-sm font-bold shadow-lg ${
                   isWatchLater
-                    ? "bg-emerald-600 text-white shadow-emerald-500/50" // SOLID GREEN WHEN ACTIVE
+                    ? "bg-emerald-600 text-white shadow-emerald-500/50" 
                     : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                 }`}
-                title={
-                  isWatchLater
-                    ? "Remove from Watch Later"
-                    : "Add to Watch Later"
-                }
               >
                 <Clock size={20} className="mr-1" />
                 <span className="hidden sm:inline">
@@ -262,7 +279,6 @@ const DetailView = ({
               </button>
             </div>
 
-            {/* Category Badge */}
             <div className="mb-2">
                 {item.category === "Rwandan" ? (
                     <span className="bg-amber-600 text-white text-xs font-bold px-2 py-1 rounded">RWANDAN MOVIE</span>
@@ -312,7 +328,6 @@ const DetailView = ({
                 )}
               </div>
             ) : (
-              // TV Series Logic (No changes needed, mostly international)
               <div className="my-6 space-y-4">
                 <div className="relative inline-block w-full sm:w-auto">
                   <select
