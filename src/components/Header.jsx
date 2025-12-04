@@ -5,18 +5,16 @@ import {
   Search,
   Menu,
   X,
-  Moon,
-  Sun,
   BookOpen,
   ChevronDown,
   Download,
   MessageSquare,
+  Film, // Icon for Rwandan Movies
 } from "lucide-react";
 
 function Header({
   view,
-  theme,
-  toggleTheme,
+  // theme props removed
   navigate,
   authStatus,
   userProfile,
@@ -28,13 +26,11 @@ function Header({
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  // --- NEW STATE FOR iOS DETECTION ---
   const [isIOS, setIsIOS] = useState(false);
 
   const profileMenuRef = useRef(null);
   const headerRef = useRef(null);
 
-  // --- DETECT IOS ON LOAD ---
   useEffect(() => {
     const checkIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
     setIsIOS(checkIOS);
@@ -100,13 +96,11 @@ function Header({
     <>
       <header
         ref={headerRef}
-        className={`fixed top-0 left-0 right-0 z-30 shadow-lg transition-colors duration-300 ${
-          theme === "dark" ? "bg-black" : "bg-white"
-        }`}
+        className="fixed top-0 left-0 right-0 z-30 shadow-lg transition-colors duration-300 bg-black"
       >
         <div className="container mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           <h1
-            className={`text-2xl font-black text-amber-500 cursor-pointer flex-shrink-0`}
+            className="text-2xl font-black text-amber-500 cursor-pointer flex-shrink-0"
             onClick={() => navigate("home")}
           >
             KIGALISTREAMS
@@ -128,28 +122,35 @@ function Header({
               onFocus={() => {
                 if (view !== "search") navigate("search");
               }}
-              className={`w-full p-2 border-l border-y rounded-l-lg focus:outline-none transition-colors ${
-                theme === "dark"
-                  ? "bg-white/10 border-white/20 backdrop-blur-sm text-white placeholder-gray-300"
-                  : "bg-white/50 border-gray-300/50 backdrop-blur-sm text-gray-900 placeholder-gray-600"
-              }`}
+              className="w-full p-2 border-l border-y rounded-l-lg focus:outline-none transition-colors bg-white/10 border-white/20 backdrop-blur-sm text-white placeholder-gray-300"
             />
             <button
               type="submit"
-              className={`bg-amber-600 hover:bg-emerald-700 text-white p-2 rounded-r-lg transition`}
+              className="bg-amber-600 hover:bg-emerald-700 text-white p-2 rounded-r-lg transition"
             >
               <Search size={20} />
             </button>
           </form>
           <nav className="flex items-center space-x-4 flex-shrink-0">
+            {/* NEW: Rwandan Movies Tab */}
+            <button
+              onClick={() => navigate("rwandan")}
+              className={`hidden md:block p-2 rounded-lg transition-colors ${
+                view === "rwandan"
+                  ? "bg-amber-600"
+                  : "hover:bg-gray-700"
+              }`}
+              title="Rwandan Movies"
+            >
+              <Film size={20} className="inline mr-1" /> Rwandan Movies
+            </button>
+
             <button
               onClick={() => navigate("watchlater")}
               className={`hidden md:block p-2 rounded-lg transition-colors ${
                 view === "watchlater"
-                  ? `bg-amber-600`
-                  : theme === "dark"
-                  ? "hover:bg-gray-700"
-                  : "hover:bg-gray-200"
+                  ? "bg-amber-600"
+                  : "hover:bg-gray-700"
               }`}
               title="Watch Later"
             >
@@ -159,10 +160,8 @@ function Header({
               onClick={() => navigate("translated")}
               className={`hidden md:block p-2 rounded-lg transition-colors ${
                 view === "translated"
-                  ? `bg-amber-600`
-                  : theme === "dark"
-                  ? "hover:bg-gray-700"
-                  : "hover:bg-gray-200"
+                  ? "bg-amber-600"
+                  : "hover:bg-gray-700"
               }`}
               title="Interpreted Films"
             >
@@ -172,49 +171,42 @@ function Header({
               onClick={() => navigate("request")}
               className={`hidden md:block p-2 rounded-lg transition-colors ${
                 view === "request"
-                  ? `bg-amber-600`
-                  : theme === "dark"
-                  ? "hover:bg-gray-700"
-                  : "hover:bg-gray-200"
+                  ? "bg-amber-600"
+                  : "hover:bg-gray-700"
               }`}
               title="Comments & Ideas"
             >
-              <MessageSquare size={20} className="inline mr-1" /> Comments &
-              Ideas
+              <MessageSquare size={20} className="inline mr-1" /> Comments
             </button>
 
+            {/* GENRES DROPDOWN FIX */}
             <div className="hidden lg:relative lg:block group">
               <button
-                className={`flex items-center p-2 rounded-lg transition-colors ${
-                  theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"
-                }`}
+                className="flex items-center p-2 rounded-lg transition-colors hover:bg-gray-700"
               >
                 Genres <ChevronDown size={18} className="ml-1" />
               </button>
-              <div
-                className={`absolute right-0 mt-3 w-48 rounded-lg shadow-xl overflow-hidden transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:block pointer-events-none group-hover:pointer-events-auto ${
-                  theme === "dark" ? "bg-gray-700" : "bg-white"
-                }`}
-              >
-                {Genres.map((genre) => (
-                  <button
-                    key={genre}
-                    onClick={() => {
-                      setSelectedGenre(genre);
-                      setSearchQuery("");
-                      navigate("genre");
-                    }}
-                    className={`block w-full text-left px-4 py-2 text-sm ${
-                      selectedGenre === genre
-                        ? `bg-amber-600 text-white`
-                        : theme === "dark"
-                        ? "hover:bg-gray-600"
-                        : "hover:bg-gray-200"
-                    }`}
-                  >
-                    {genre}
-                  </button>
-                ))}
+              {/* Added pt-2 (padding top) to bridge the gap so mouse doesn't lose focus */}
+              <div className="absolute right-0 top-full pt-2 opacity-0 group-hover:opacity-100 group-hover:block pointer-events-none group-hover:pointer-events-auto transition-opacity duration-200">
+                <div className="w-48 rounded-lg shadow-xl overflow-hidden bg-gray-700">
+                  {Genres.map((genre) => (
+                    <button
+                      key={genre}
+                      onClick={() => {
+                        setSelectedGenre(genre);
+                        setSearchQuery("");
+                        navigate("genre");
+                      }}
+                      className={`block w-full text-left px-4 py-2 text-sm ${
+                        selectedGenre === genre
+                          ? "bg-amber-600 text-white"
+                          : "hover:bg-gray-600"
+                      }`}
+                    >
+                      {genre}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -222,11 +214,7 @@ function Header({
               {authStatus.isAdmin ? (
                 <button
                   onClick={() => navigate("admin")}
-                  className={`p-2 rounded-lg transition text-xs font-semibold border ${
-                    theme === "dark"
-                      ? "bg-teal-600/20 border-teal-500/50 backdrop-blur-sm text-teal-300 hover:bg-teal-600/50"
-                      : "bg-teal-100 border-teal-300 backdrop-blur-sm text-teal-800 hover:bg-teal-200"
-                  }`}
+                  className="p-2 rounded-lg transition text-xs font-semibold border bg-teal-600/20 border-teal-500/50 backdrop-blur-sm text-teal-300 hover:bg-teal-600/50"
                   title="Admin Panel"
                 >
                   ADMIN
@@ -235,11 +223,7 @@ function Header({
                 <>
                   <button
                     onClick={() => setIsProfileMenuOpen((prev) => !prev)}
-                    className={`w-9 h-9 rounded-full flex items-center justify-center text-lg font-bold border-2 cursor-pointer ${
-                      theme === "dark"
-                        ? "bg-emerald-800 border-emerald-500 text-white"
-                        : "bg-emerald-100 border-emerald-300 text-emerald-800"
-                    }`}
+                    className="w-9 h-9 rounded-full flex items-center justify-center text-lg font-bold border-2 cursor-pointer bg-emerald-800 border-emerald-500 text-white"
                     title={`Logged in as ${
                       userProfile?.username || userProfile?.email
                     }`}
@@ -252,11 +236,7 @@ function Header({
                   </button>
 
                   {isProfileMenuOpen && (
-                    <div
-                      className={`absolute right-0 mt-3 w-48 rounded-lg shadow-xl overflow-hidden ${
-                        theme === "dark" ? "bg-gray-700" : "bg-white"
-                      }`}
-                    >
+                    <div className="absolute right-0 mt-3 w-48 rounded-lg shadow-xl overflow-hidden bg-gray-700">
                       <div className="p-3 border-b border-gray-600">
                         <p className="text-sm font-semibold truncate">
                           {userProfile?.username || "User"}
@@ -270,11 +250,7 @@ function Header({
                           firebaseLogout();
                           setIsProfileMenuOpen(false);
                         }}
-                        className={`block w-full text-left px-4 py-2 text-sm ${
-                          theme === "dark"
-                            ? "text-red-400 hover:bg-gray-600"
-                            : "text-red-600 hover:bg-gray-200"
-                        }`}
+                        className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-600"
                       >
                         Logout
                       </button>
@@ -284,11 +260,7 @@ function Header({
               ) : (
                 <button
                   onClick={() => navigate("admin")}
-                  className={`p-2 rounded-lg transition text-xs font-semibold border ${
-                    theme === "dark"
-                      ? "bg-white/10 border-white/20 backdrop-blur-sm text-white hover:bg-white/20"
-                      : "bg-white/50 border-gray-300/50 backdrop-blur-sm text-gray-900 hover:bg-white/70"
-                  }`}
+                  className="p-2 rounded-lg transition text-xs font-semibold border bg-white/10 border-white/20 backdrop-blur-sm text-white hover:bg-white/20"
                   title="Login / Sign Up"
                 >
                   LOGIN
@@ -296,29 +268,10 @@ function Header({
               )}
             </div>
 
+            {/* REMOVED: Theme Toggle Button */}
+
             <button
-              onClick={() => navigate("contact")}
-              className={`hidden sm:block p-2 rounded-lg transition-colors ${
-                theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"
-              }`}
-            >
-              Contact Us
-            </button>
-            <button
-              onClick={toggleTheme}
-              className={`p-2 rounded-full transition-colors border ${
-                theme === "dark"
-                  ? "bg-white/10 border-white/20 backdrop-blur-sm text-yellow-400 hover:bg-white/20"
-                  : "bg-white/50 border-gray-300/50 backdrop-blur-sm text-gray-700 hover:bg-white/70"
-              }`}
-              title="Toggle Theme"
-            >
-              {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-            <button
-              className={`lg:hidden p-2 rounded-lg transition-colors ${
-                theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"
-              }`}
+              className="lg:hidden p-2 rounded-lg transition-colors hover:bg-gray-700"
               onClick={() => setIsMenuOpen(true)}
               title="Open Menu"
             >
@@ -343,38 +296,27 @@ function Header({
             onFocus={() => {
               if (view !== "search") navigate("search");
             }}
-            className={`w-full p-2 pl-8 border rounded-lg focus:outline-none transition-colors ${
-              theme === "dark"
-                ? "bg-white/10 border-white/20 backdrop-blur-sm text-white placeholder-gray-300"
-                : "bg-white/50 border-gray-300/50 backdrop-blur-sm text-gray-900 placeholder-gray-600"
-            }`}
+            className="w-full p-2 pl-8 border rounded-lg focus:outline-none transition-colors bg-white/10 border-white/20 backdrop-blur-sm text-white placeholder-gray-300"
           />
           <Search
             size={18}
-            className={`absolute left-6 top-1/2 -translate-y-1/2 transform pb-1 ${
-              theme === "dark" ? "text-gray-300" : "text-gray-600"
-            }`}
+            className="absolute left-6 top-1/2 -translate-y-1/2 transform pb-1 text-gray-300"
           />
         </form>
       </header>
 
+      {/* MOBILE MENU */}
       <div
         className={`fixed top-0 right-0 h-full w-full max-w-xs z-50 transform transition-transform duration-300 ease-in-out ${
           isMenuOpen ? "translate-x-0" : "translate-x-full"
-        } ${
-          theme === "dark"
-            ? "bg-black border-l border-gray-700"
-            : "bg-white border-l border-gray-200"
-        } lg:hidden`}
+        } bg-black border-l border-gray-700 lg:hidden`}
       >
         <div className="p-6 flex flex-col h-full">
           <div className="flex justify-between items-center mb-8">
-            <h2 className={`text-xl font-bold bg-amber-600`}>Menu</h2>
+            <h2 className="text-xl font-bold bg-amber-600">Menu</h2>
             <button
               onClick={() => setIsMenuOpen(false)}
-              className={`p-2 rounded-full ${
-                theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"
-              }`}
+              className="p-2 rounded-full hover:bg-gray-700"
             >
               <X size={24} />
             </button>
@@ -382,6 +324,7 @@ function Header({
           <div className="space-y-4 flex-grow overflow-y-auto custom-scrollbar">
             {[
               "home",
+              "rwandan", // Added mobile link
               "watchlater",
               "translated",
               "contact",
@@ -399,10 +342,8 @@ function Header({
                 }}
                 className={`block w-full text-left p-3 rounded-lg text-lg font-medium transition-colors capitalize ${
                   view === item
-                    ? `bg-amber-600 text-white`
-                    : theme === "dark"
-                    ? "hover:bg-gray-700"
-                    : "hover:bg-gray-200"
+                    ? "bg-amber-600 text-white"
+                    : "hover:bg-gray-700"
                 }`}
               >
                 {item === "admin"
@@ -412,21 +353,21 @@ function Header({
                   : item === "translated"
                   ? "Interpreted"
                   : item === "request"
-                  ? "Comments & Ideas"
+                  ? "Comments"
+                  : item === "rwandan"
+                  ? "Rwandan Movies"
                   : item}
               </button>
             ))}
 
-            {/* ONLY SHOW DOWNLOAD BUTTON IF NOT ON IPHONE */}
             {!isIOS && (
               <a
                 href="https://github.com/gisaiconfii-boop/kigalistreams-appFILES-APK/releases/download/v1.0/KSTRMS.apk"
                 download
                 onClick={() => setIsMenuOpen(false)}
-                className={`block w-full text-left p-3 rounded-lg text-lg font-medium transition-colors bg-green-600 text-white hover:bg-green-700 flex items-center`}
+                className="block w-full text-left p-3 rounded-lg text-lg font-medium transition-colors bg-green-600 text-white hover:bg-green-700 flex items-center"
               >
-                <Download size={20} className="inline mr-3" /> Download Android
-                App
+                <Download size={20} className="inline mr-3" /> Download Android App
               </a>
             )}
 
@@ -436,7 +377,7 @@ function Header({
                   firebaseLogout();
                   setIsMenuOpen(false);
                 }}
-                className={`block w-full text-left p-3 rounded-lg text-lg font-medium transition-colors bg-red-600 text-white hover:bg-red-700 flex items-center`}
+                className="block w-full text-left p-3 rounded-lg text-lg font-medium transition-colors bg-red-600 text-white hover:bg-red-700 flex items-center"
               >
                 <X size={20} className="inline mr-3" />
                 {authStatus.isAdmin ? "Admin Logout" : "Logout"}
@@ -456,10 +397,8 @@ function Header({
                     }}
                     className={`block w-full text-left p-3 rounded-lg transition-colors text-base ${
                       selectedGenre === genre
-                        ? `bg-amber-600 text-white`
-                        : theme === "dark"
-                        ? "hover:bg-gray-700"
-                        : "hover:bg-gray-200"
+                        ? "bg-amber-600 text-white"
+                        : "hover:bg-gray-700"
                     }`}
                   >
                     {genre}

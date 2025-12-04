@@ -10,9 +10,7 @@ import {
 } from "../utils.js";
 
 export const useAppState = () => {
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem("kigalistreams_theme") || "dark";
-  });
+  // REMOVED: Theme State (We are now strictly Dark Mode)
 
   const [content, setContent] = useState([]);
   const [isContentLoading, setIsContentLoading] = useState(true);
@@ -36,13 +34,7 @@ export const useAppState = () => {
     isReady: false,
   });
 
-  const toggleTheme = () => {
-    setTheme((prev) => {
-      const newTheme = prev === "dark" ? "light" : "dark";
-      localStorage.setItem("kigalistreams_theme", newTheme);
-      return newTheme;
-    });
-  };
+  // REMOVED: toggleTheme function
 
   const ADMIN_UIDS = [
     "SGxlEv4uHob8oc77Jukv0pzBG3y1",
@@ -199,8 +191,8 @@ export const useAppState = () => {
   );
 
   return {
-    theme,
-    toggleTheme,
+    theme: "dark", // Enforced Dark Mode
+    toggleTheme: () => {}, // No-op
     content,
     isContentLoading,
     setContent,

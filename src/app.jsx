@@ -11,14 +11,11 @@ import { useAdminPassword } from "./hooks/useAdminPassword.js";
 import { useAppState } from "./hooks/useAppState.js";
 import { Capacitor } from "@capacitor/core"; 
 
-// Import Icons
 import { Download, X } from "lucide-react";
 
-// Import Components
 import Header from "./components/Header.jsx";
 import Card from "./components/Card.jsx";
 
-// Import Views
 import HomeView from "./views/HomeView.jsx";
 import DetailView from "./views/DetailView.jsx";
 import ContactView from "./views/ContactView.jsx";
@@ -27,6 +24,8 @@ import AdminView from "./views/AdminView.jsx";
 import LoginView from "./views/LoginView.jsx";
 import WatchLaterView from "./views/WatchLaterView.jsx";
 import TranslatedFilmsView from "./views/TranslatedFilmsView.jsx";
+// NEW IMPORT
+import RwandanView from "./views/RwandanView.jsx";
 
 // --- CONFIGURATION ---
 const APK_DOWNLOAD_URL = "https://github.com/gisaiconfii-boop/kigalistreams-appFILES-APK/releases/download/v1.0/KStreams.apk";
@@ -207,7 +206,6 @@ export default function App() {
   }, [content, searchQuery, selectedGenre]);
 
   const currentViewElement = useMemo(() => {
-    // --- LOADING BLOCK REMOVED FOR INSTANT ACCESS ---
 
     if (view === "detail" && currentId) {
       return (
@@ -223,6 +221,21 @@ export default function App() {
       );
     }
     if (view === "contact") return <ContactView navigate={navigate} />;
+    
+    // --- NEW: RWANDAN VIEW ---
+    if (view === "rwandan") {
+      return (
+        <RwandanView 
+          content={content}
+          navigate={navigate}
+          toggleWatchLater={toggleWatchLater}
+          watchLater={watchLater}
+          isContentLoading={isContentLoading}
+        />
+      );
+    }
+    // -------------------------
+
     if (view === "request") {
       return (
         <RequestView
@@ -389,25 +402,18 @@ export default function App() {
   ]);
 
   useEffect(() => {
-    document.body.className =
-      theme === "dark" ? "bg-neutral-900 font-inter" : "bg-gray-100 font-inter";
-    document.body.style.color = theme === "dark" ? "#f3f4f6" : "#1f2937";
-
+    // Theme logic simplified to just enforce base styles
+    document.body.className = "bg-neutral-900 font-inter text-gray-100";
+    
     if (view === "home") {
       document.body.classList.add("view-home");
     } else {
       document.body.classList.remove("view-home");
     }
-  }, [theme, view]);
+  }, [view]);
 
   return (
-    <div
-      className={`min-h-screen ${
-        theme === "dark"
-          ? "bg-neutral-900 text-gray-100"
-          : "bg-gray-100 text-gray-900"
-      }`}
-    >
+    <div className="min-h-screen bg-neutral-900 text-gray-100">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         .font-inter { font-family: 'Inter', sans-serif; }
@@ -434,8 +440,7 @@ export default function App() {
 
       <Header
         view={view}
-        theme={theme}
-        toggleTheme={toggleTheme}
+        // theme props removed
         navigate={navigate}
         authStatus={authStatus}
         userProfile={userProfile}

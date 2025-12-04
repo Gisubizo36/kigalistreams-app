@@ -65,6 +65,7 @@ export const getRequestsCollectionRef = (db) =>
 // URL Hash Utilities
 export const getInitialView = () => {
   const hash = window.location.hash.slice(1);
+  // Added "rwandan" to valid views
   const validViews = new Set([
     "detail",
     "contact",
@@ -75,6 +76,7 @@ export const getInitialView = () => {
     "genre",
     "allcontent",
     "request",
+    "rwandan", 
   ]);
   const viewPart = hash.split("/")[0];
   if (validViews.has(viewPart)) {
@@ -107,6 +109,8 @@ export const emptyContent = {
   title: "",
   genre: [],
   type: "Movie",
+  // New field for category (International [Default] or Rwandan)
+  category: "International", 
   thumbnail: "",
   backdropImage: "",
   description: "",

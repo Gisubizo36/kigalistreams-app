@@ -35,6 +35,7 @@ const DetailView = ({
   const [currentPlaybackTime, setCurrentPlaybackTime] = useState(initialTime);
   const [message, setMessage] = useState("");
 
+  // FIX: Load Trailer immediately if exists, so native YouTube button appears
   const initialVideo = useMemo(() => {
     if (item && item.trailerLink) {
       return {
@@ -103,7 +104,7 @@ const DetailView = ({
     return (
       <div className="text-white p-8">
         Content not found.{" "}
-        <button onClick={() => navigate("home")} className={`bg-amber-600`}>
+        <button onClick={() => navigate("home")} className="bg-amber-600 p-2 rounded">
           Go Home
         </button>
       </div>
@@ -111,6 +112,23 @@ const DetailView = ({
 
   const playMovie = (epNumber) => {
     setMessage("");
+    
+    // --- RWANDAN MOVIE LOGIC ---
+    // If it's a Rwandan movie, we play it internally (like a trailer)
+    if (item.category === "Rwandan" && item.movieLink) {
+        setCurrentVideo({
+            link: item.movieLink,
+            title: item.title,
+            isTrailer: false,
+            subtitleUrl: null,
+            initialTime: 0,
+        });
+        window.scrollTo(0,0);
+        return;
+    }
+    // ---------------------------
+
+    // --- INTERNATIONAL LOGIC (Ads + External) ---
     let externalLink = null;
     if (item.type === "TV Series" && item.episodes.length > 0) {
       const ep = item.episodes.find(
@@ -133,11 +151,13 @@ const DetailView = ({
       (externalLink.startsWith("http://") ||
         externalLink.startsWith("https://"))
     ) {
+      // Ad Pop-under
       window.open(
         "https://otieu.com/4/10173729",
         "_blank",
         "noopener,noreferrer"
       );
+      // Redirect
       window.location.href = externalLink;
     } else {
       setMessage("Error: The provided link is not valid or was not found.");
@@ -172,68 +192,61 @@ const DetailView = ({
       <main className="container mx-auto py-8 px-4 sm:px-6">
         <button
           onClick={() => navigate("home")}
-          className={`mb-6 flex items-center bg-amber-600 hover:text-emerald-400 transition`}
+          className="mb-6 flex items-center bg-amber-600 hover:text-emerald-400 transition text-white px-4 py-2 rounded-lg"
         >
           <ArrowLeft size={20} className="mr-1" /> Back to Home
         </button>
-        {currentVideo.link ? (
-          <VideoPlayer
-            key={currentVideo.link}
-            url={currentVideo.link}
-            title={currentVideo.title}
-            isTrailer={currentVideo.isTrailer}
-            onProgressUpdate={handleProgressUpdate}
-            initialTime={currentVideo.initialTime}
-            subtitleUrl={
-              currentVideo.subtitleUrl ||
-              item.episodes?.find((e) => e.episodeNumber === currentEpisode)
-                ?.subtitleLink
-            }
-          />
-        ) : (
-          <div className="relative w-full aspect-video bg-gray-800 rounded-xl flex items-center justify-center text-gray-400 text-lg overflow-hidden">
-            <img
-              src={
-                getYouTubeThumbnailUrl(item.trailerLink) ||
-                item.thumbnail ||
-                `https://placehold.co/1280x720/1f2937/fff?text=${encodeURIComponent(
-                  item.title
-                )}`
-              }
-              alt={item.title}
-              className="w-full h-full object-cover"
+
+        {/* --- VIDEO PLAYER: RESTRICTED WIDTH --- */}
+        <div className="max-w-4xl mx-auto">
+            {currentVideo.link ? (
+            <VideoPlayer
+                key={currentVideo.link}
+                url={currentVideo.link}
+                title={currentVideo.title}
+                isTrailer={currentVideo.isTrailer}
+                onProgressUpdate={handleProgressUpdate}
+                initialTime={currentVideo.initialTime}
+                subtitleUrl={
+                currentVideo.subtitleUrl ||
+                item.episodes?.find((e) => e.episodeNumber === currentEpisode)
+                    ?.subtitleLink
+                }
             />
-            {item.trailerLink && (
-              <button
-                onClick={playTrailer}
-                className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm transition-all duration-300 hover:bg-black/50"
-                aria-label="Play Trailer"
-              >
-                <div className="w-20 h-14 bg-red-600/90 rounded-xl flex items-center justify-center shadow-lg transition-all duration-300 hover:bg-red-700 hover:scale-110 group">
-                  <Play
-                    size={40}
-                    className="text-white transition-transform group-hover:scale-105"
-                    fill="currentColor"
-                  />
-                </div>
-              </button>
+            ) : (
+            <div className="relative w-full aspect-video bg-gray-800 rounded-xl flex items-center justify-center text-gray-400 text-lg overflow-hidden">
+                <img
+                src={
+                    item.thumbnail ||
+                    `https://placehold.co/1280x720/1f2937/fff?text=${encodeURIComponent(
+                    item.title
+                    )}`
+                }
+                alt={item.title}
+                className="w-full h-full object-cover opacity-50"
+                />
+                <p>No Video Available</p>
+            </div>
             )}
-          </div>
-        )}
+        </div>
+        
         {message && (
           <p className="mt-4 text-center text-sm text-green-400">{message}</p>
         )}
+
         <div className="mt-8 flex flex-col lg:flex-row gap-8">
           <div className="lg:w-2/3">
             <div className="flex justify-between items-start mb-4">
               <h1 className="text-3xl font-bold text-white mb-1">
                 {item.title}
               </h1>
+              
+              {/* --- WATCH LATER TOGGLE FIX --- */}
               <button
                 onClick={() => toggleWatchLater(contentId)}
-                className={`flex items-center p-3 rounded-full transition text-sm ${
+                className={`flex items-center p-3 rounded-full transition text-sm font-bold shadow-lg ${
                   isWatchLater
-                    ? `bg-emerald-700 text-white hover:bg-emerald-800`
+                    ? "bg-emerald-600 text-white shadow-emerald-500/50" // SOLID GREEN WHEN ACTIVE
                     : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                 }`}
                 title={
@@ -248,10 +261,18 @@ const DetailView = ({
                 </span>
               </button>
             </div>
+
+            {/* Category Badge */}
+            <div className="mb-2">
+                {item.category === "Rwandan" ? (
+                    <span className="bg-amber-600 text-white text-xs font-bold px-2 py-1 rounded">RWANDAN MOVIE</span>
+                ) : (
+                    <span className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded">INTERNATIONAL</span>
+                )}
+            </div>
+
             {item.translator && (
-              <p
-                className={`text-lg text-emerald-400 font-semibold mb-2 flex items-center`}
-              >
+              <p className="text-lg text-emerald-400 font-semibold mb-2 flex items-center">
                 <BookOpen size={20} className="mr-2" /> Interpreted by:{" "}
                 {item.translator}
               </p>
@@ -261,12 +282,13 @@ const DetailView = ({
               <div className="flex flex-wrap gap-4 my-6">
                 <button
                   onClick={() => playMovie(currentEpisode)}
-                  className={`flex items-center bg-amber-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg shadow-emerald-600/30`}
+                  className="flex items-center bg-amber-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg shadow-emerald-600/30"
                 >
                   <Play size={20} className="mr-2" />
                   Watch Movie
                 </button>
-                {item.trailerLink && (
+                
+                {item.trailerLink && item.trailerLink !== currentVideo.link && (
                   <button
                     onClick={playTrailer}
                     className="flex items-center border border-gray-600 text-gray-300 hover:bg-gray-700 font-semibold py-3 px-6 rounded-xl transition"
@@ -275,6 +297,7 @@ const DetailView = ({
                     Play Trailer
                   </button>
                 )}
+                
                 {item.downloadLink && (
                   <a
                     href={item.downloadLink}
@@ -289,6 +312,7 @@ const DetailView = ({
                 )}
               </div>
             ) : (
+              // TV Series Logic (No changes needed, mostly international)
               <div className="my-6 space-y-4">
                 <div className="relative inline-block w-full sm:w-auto">
                   <select
@@ -343,20 +367,17 @@ const DetailView = ({
               {item.genre.map((g) => (
                 <span
                   key={g}
-                  className={`text-xs font-medium bg-amber-600/30 text-emerald-300 py-1 px-3 rounded-full`}
+                  className="text-xs font-medium bg-amber-600/30 text-emerald-300 py-1 px-3 rounded-full"
                 >
                   {g}
                 </span>
               ))}
-              <span className="text-xs font-medium bg-gray-600/30 text-gray-300 py-1 px-3 rounded-full">
-                {item.type}
-              </span>
             </div>
           </div>
           <div className="lg:w-1/3">
             <div className="bg-gray-800 p-4 rounded-xl shadow-lg">
               <h3 className="text-xl font-bold text-white mb-4 flex items-center">
-                <Globe size={20} className={`mr-2 bg-amber-600`} />
+                <Globe size={20} className="mr-2 text-amber-600" />
                 More Like This
               </h3>
               <div className="space-y-4">
@@ -367,21 +388,9 @@ const DetailView = ({
                     onClick={() => navigate("detail", rc.id)}
                   >
                     <img
-                      src={
-                        rc.thumbnail ||
-                        `https://placehold.co/80x120/1f2937/fff?text=${encodeURIComponent(
-                          rc.title
-                        )}`
-                      }
+                      src={rc.thumbnail}
                       alt={rc.title}
                       className="w-12 h-16 object-cover rounded-md"
-                      loading="lazy"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = `https://placehold.co/80x120/1f2937/fff?text=${encodeURIComponent(
-                          rc.title
-                        )}`;
-                      }}
                     />
                     <div>
                       <h4 className="text-white text-sm font-semibold truncate">

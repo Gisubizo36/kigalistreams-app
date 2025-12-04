@@ -13,6 +13,13 @@ const HomeView = ({
   const [currentCircleIndex, setCurrentCircleIndex] = useState(0);
   const watchLaterIds = watchLater;
 
+  // --- FILTER: EXCLUDE RWANDAN MOVIES FROM HOME ---
+  const internationalContent = useMemo(() => {
+    return content.filter((item) => item.category !== "Rwandan");
+  }, [content]);
+
+  // Continue Watching can remain global (shows everything you started), 
+  // or you can filter it too. Leaving it global is usually better UX.
   const continueWatchingItems = useMemo(() => {
     return content
       .filter((item) => continueWatching[item.id])
@@ -23,9 +30,10 @@ const HomeView = ({
       }));
   }, [content, continueWatching]);
 
+  // Use internationalContent for everything else
   const sortedContent = useMemo(
-    () => [...content].sort((a, b) => b.timestamp - a.timestamp),
-    [content]
+    () => [...internationalContent].sort((a, b) => b.timestamp - a.timestamp),
+    [internationalContent]
   );
 
   const trendingItems = useMemo(
@@ -33,7 +41,7 @@ const HomeView = ({
     [sortedContent]
   );
 
-  // --- ITEMS FOR MOBILE SLIDER ---
+  // --- HERO SLIDER LOGIC (International Only) ---
   const baseHeroItems = useMemo(() => {
     const recentItems = sortedContent.slice(0, 10);
     const combined = [...trendingItems, ...recentItems];
@@ -58,7 +66,6 @@ const HomeView = ({
     return duplicatedItems;
   }, [trendingItems, sortedContent]);
 
-  // --- 5 SECOND INTERVAL FOR SLIDE ---
   useEffect(() => {
     if (baseHeroItems.length <= 1) return;
     const interval = setInterval(() => {
@@ -84,46 +91,31 @@ const HomeView = ({
           backgroundImage: "url(https://images.pexels.com/photos/109669/pexels-photo-109669.jpeg)",
         }}
       >
-        {/* This overlay makes the background dark */}
         <div className="absolute inset-0 bg-black/60"></div>
 
         {/* --- MOBILE HERO SECTION --- */}
         <div className="relative z-10 w-full pt-6 pb-4 lg:hidden">
           <div className="container mx-auto px-4 relative h-56 sm:h-64">
-            
-            {/* 1. Vertical Line Separator */}
             <div className="absolute right-[28%] top-2 bottom-2 w-px bg-gray-500/50 z-0"></div>
-
-            {/* 2. The "K S" Letters */}
             <div className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col items-center space-y-1 z-0 select-none">
               <span className="text-5xl font-bold text-white/20 leading-none" style={{fontFamily: 'Algerian, serif'}}>K</span>
               <span className="text-5xl font-bold text-white/20 leading-none" style={{fontFamily: 'Algerian, serif'}}>S</span>
             </div>
 
-            {/* 3. The Slider Items */}
             {baseHeroItems.length > 0 ? (
               baseHeroItems.map((item, index) => {
                 const length = baseHeroItems.length;
                 let offset = (index - currentCircleIndex + length) % length;
-                
                 if (offset > 2 && offset < length - 1) return null;
 
-                // Base styles
                 let wrapperClass = "absolute rounded-xl overflow-hidden transition-all duration-700 ease-in-out shadow-2xl";
-                
-                // --- UPDATED IMAGE POSITION: object-[center_20%] (Upper Middle) ---
                 let contentClass = "w-full h-full object-cover object-[center_20%]";
                 
-                // --- STATE 1: BIG PICTURE (Left) ---
                 if (offset === 0) {
                   wrapperClass += " top-0 left-0 w-[68%] h-full z-20 opacity-100 border border-gray-600";
-                } 
-                // --- STATE 2: SMALL PICTURE (Right) ---
-                else if (offset === 1) {
+                } else if (offset === 1) {
                   wrapperClass += " top-[25%] right-[12%] w-[18%] h-[50%] z-10 opacity-80 grayscale-[30%] hover:grayscale-0";
-                }
-                // --- STATE 3: EXITING ---
-                else {
+                } else {
                   wrapperClass += " top-[25%] -left-[20%] w-[10%] h-[50%] z-0 opacity-0";
                 }
 
@@ -134,7 +126,7 @@ const HomeView = ({
                     onClick={() => offset === 0 && navigate("detail", item.id)}
                   >
                     <img
-                      src={item.thumbnail || `https://placehold.co/400x600/1f2937/fff?text=${encodeURIComponent(item.title)}`}
+                      src={item.thumbnail}
                       alt={item.title}
                       className={contentClass}
                     />
@@ -151,8 +143,6 @@ const HomeView = ({
               <div className="w-[68%] h-full bg-gray-800 animate-pulse rounded-xl border border-gray-700"></div>
             )}
           </div>
-
-          {/* 4. Text Below Slider */}
           <div className="container mx-auto px-4 mt-8 text-center z-10 relative">
             <h1 className="text-3xl font-extrabold text-white leading-tight mb-1 drop-shadow-md">
               Unlimited Movies.
@@ -163,64 +153,32 @@ const HomeView = ({
           </div>
         </div>
 
-        {/* --- DESKTOP HERO SECTION (FIXED) --- */}
-        {/* Added 'relative z-10' here so text sits above the black overlay */}
+        {/* --- DESKTOP HERO SECTION --- */}
         <div className="hidden lg:block container mx-auto px-4 sm:px-6 pb-12 lg:pb-0 lg:h-full lg:flex lg:items-center relative z-10">
           <div className="flex-1 max-w-lg text-center lg:text-left pt-4 lg:pt-0">
-            <h1
-              className="text-4xl md:text-5xl font-extrabold text-white leading-tight mb-4"
-              style={{ 
-                textShadow: "2px 2px 8px rgba(0,0,0,0.7)",
-                color: "white" 
-              }}
-            >
+            <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight mb-4" style={{ textShadow: "2px 2px 8px rgba(0,0,0,0.7)" }}>
               Unlimited Movies, TV Shows, and More.
             </h1>
-            <p 
-              className="text-lg md:text-xl text-gray-200"
-              style={{ color: "#e5e7eb" }}
-            >
+            <p className="text-lg md:text-xl text-gray-200">
               Watch anywhere. Interpreted for you in Kinyarwanda.
             </p>
           </div>
           <div className="hidden lg:block flex-1 relative h-full">
-            <div
-              className="absolute -right-32 top-1/2 -translate-y-1/2 w-[740px] h-[380px] overflow-hidden"
-              style={{
-                maskImage:
-                  "linear-gradient(to right, transparent, black 20%, black 80%, transparent 100%)",
-              }}
-            >
+            <div className="absolute -right-32 top-1/2 -translate-y-1/2 w-[740px] h-[380px] overflow-hidden" style={{ maskImage: "linear-gradient(to right, transparent, black 20%, black 80%, transparent 100%)" }}>
               <div className="absolute left-0 top-0 flex animate-scroll h-full py-4 items-center">
-                {heroItems.length > 0
-                  ? heroItems.map((item, index) => (
-                      <div
-                        key={index}
-                        className="w-[200px] aspect-[2/3] mx-3 flex-shrink-0 transition-transform duration-500 hover:scale-110 cursor-pointer"
-                        onClick={() => navigate("detail", item.id)}
-                      >
-                        <img
-                          src={
-                            item.thumbnail ||
-                            `https://placehold.co/200x300/1f2937/fff?text=${encodeURIComponent(item.title)}`
-                          }
-                          alt={item.title}
-                          className="w-full h-full object-cover rounded-lg shadow-2xl"
-                        />
-                      </div>
-                    ))
-                  : [1, 2, 3, 4, 5, 6].map((i) => (
-                      <div
-                        key={i}
-                        className="w-[200px] aspect-[2/3] mx-3 flex-shrink-0 bg-gray-700 rounded-lg"
-                      ></div>
-                    ))}
+                {heroItems.map((item, index) => (
+                  <div key={index} className="w-[200px] aspect-[2/3] mx-3 flex-shrink-0 transition-transform duration-500 hover:scale-110 cursor-pointer" onClick={() => navigate("detail", item.id)}>
+                    <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover rounded-lg shadow-2xl" />
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
       </div>
+      
       <AdBanner />
+      
       <div className="relative w-full overflow-hidden">
         <div className="absolute inset-0 z-0 performant-bg"></div>
         <main className="container mx-auto py-8 relative z-20 pb-8">
