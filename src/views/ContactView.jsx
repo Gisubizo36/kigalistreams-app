@@ -29,7 +29,7 @@ const ContactView = ({ navigate }) => (
 
           {/* --- CHANGED: Added New Numbers --- */}
           <a
-            href="https://wa.me/250795389739"
+            href="https://wa.me/250787852414"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-green-600/30"

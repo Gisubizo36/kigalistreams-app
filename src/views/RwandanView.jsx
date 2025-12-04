@@ -1,5 +1,8 @@
 import React, { useState, useMemo, useEffect } from "react";
 import Section from "../components/Section.jsx";
+import { Film } from "lucide-react";
+// Import CardPlaceholder to make the initial load look smooth
+import CardPlaceholder from "../components/CardPlaceholder.jsx"; 
 
 const RwandanView = ({
   content,
@@ -9,6 +12,8 @@ const RwandanView = ({
   isContentLoading,
 }) => {
   const [currentCircleIndex, setCurrentCircleIndex] = useState(0);
+  // NEW: State to delay the rendering of heavy rows
+  const [sectionsLoaded, setSectionsLoaded] = useState(false);
   const watchLaterIds = watchLater;
 
   // --- FILTER: ONLY RWANDAN MOVIES ---
@@ -18,7 +23,7 @@ const RwandanView = ({
       .sort((a, b) => b.timestamp - a.timestamp);
   }, [content]);
 
-  // --- LOGIC FOR SLIDERS (IDENTICAL TO HOMEVIEW) ---
+  // --- LOGIC FOR SLIDERS ---
   const trendingRwandan = useMemo(
     () => rwandanContent.filter((item) => item.isTrending).slice(0, 10),
     [rwandanContent]
@@ -30,8 +35,9 @@ const RwandanView = ({
     const uniqueItems = Array.from(new Map(combined.map(item => [item.id, item])).values());
     if (uniqueItems.length === 0) return [];
     let pool = [...uniqueItems];
-    while (pool.length < 5) {
-      pool = [...pool, ...uniqueItems];
+    // Optimize: Only duplicate if we really need to (saves memory)
+    if (pool.length < 5) { 
+        while (pool.length < 5) pool = [...pool, ...uniqueItems];
     }
     return pool.slice(0, 15);
   }, [trendingRwandan, rwandanContent]);
@@ -40,15 +46,19 @@ const RwandanView = ({
     const items = trendingRwandan.length > 0 ? trendingRwandan : rwandanContent;
     const baseItems = items.slice(0, 8);
     if (baseItems.length === 0) return [];
-
+    
+    // Optimize: Reduce heavy duplication for the desktop slider
     let duplicatedItems = [...baseItems];
-    while (duplicatedItems.length < 16 && baseItems.length > 0) {
-      duplicatedItems = [...duplicatedItems, ...baseItems];
+    if (duplicatedItems.length < 16 && baseItems.length > 0) {
+        // Just duplicate once or twice, don't overdo it
+        while (duplicatedItems.length < 16) duplicatedItems = [...duplicatedItems, ...baseItems];
     }
     return duplicatedItems;
   }, [trendingRwandan, rwandanContent]);
 
-  // --- AUTO SLIDE EFFECT ---
+  // --- EFFECTS ---
+  
+  // 1. Auto Slide
   useEffect(() => {
     if (baseHeroItems.length <= 1) return;
     const interval = setInterval(() => {
@@ -56,6 +66,15 @@ const RwandanView = ({
     }, 5000);
     return () => clearInterval(interval);
   }, [baseHeroItems.length]);
+
+  // 2. NEW: Progressive Loading (Fixes the "Lag")
+  useEffect(() => {
+    // Wait just 10ms to let the page transition finish, then load the rows
+    const timer = setTimeout(() => {
+        setSectionsLoaded(true);
+    }, 10);
+    return () => clearTimeout(timer);
+  }, []);
 
   const newReleases = rwandanContent.slice(0, 10);
   const topRated = useMemo(
@@ -65,7 +84,7 @@ const RwandanView = ({
 
   return (
     <div className="min-h-screen pt-40 lg:pt-24 relative">
-      {/* --- BACKGROUND IMAGE (IDENTICAL TO HOME) --- */}
+      {/* --- BACKGROUND IMAGE --- */}
       <div
         className="relative w-full h-auto lg:h-[500px] bg-cover bg-center -mt-16"
         style={{
@@ -74,7 +93,7 @@ const RwandanView = ({
       >
         <div className="absolute inset-0 bg-black/60"></div>
 
-        {/* --- MOBILE HERO SECTION (IDENTICAL TO HOME) --- */}
+        {/* --- MOBILE HERO --- */}
         <div className="relative z-10 w-full pt-6 pb-4 lg:hidden">
           <div className="container mx-auto px-4 relative h-56 sm:h-64">
             <div className="absolute right-[28%] top-2 bottom-2 w-px bg-gray-500/50 z-0"></div>
@@ -121,7 +140,8 @@ const RwandanView = ({
                 );
               })
             ) : (
-              <div className="w-[68%] h-full bg-gray-800 animate-pulse rounded-xl border border-gray-700"></div>
+              // Simplified placeholder to reduce lag
+              <div className="w-[68%] h-full bg-gray-800 rounded-xl border border-gray-700"></div>
             )}
           </div>
           <div className="container mx-auto px-4 mt-8 text-center z-10 relative">
@@ -134,7 +154,7 @@ const RwandanView = ({
           </div>
         </div>
 
-        {/* --- DESKTOP HERO SECTION (IDENTICAL TO HOME) --- */}
+        {/* --- DESKTOP HERO --- */}
         <div className="hidden lg:block container mx-auto px-4 sm:px-6 pb-12 lg:pb-0 lg:h-full lg:flex lg:items-center relative z-10">
           <div className="flex-1 max-w-lg text-center lg:text-left pt-4 lg:pt-0">
             <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight mb-4" style={{ textShadow: "2px 2px 8px rgba(0,0,0,0.7)" }}>
@@ -158,42 +178,59 @@ const RwandanView = ({
         </div>
       </div>
 
-      {/* --- CONTENT SECTIONS --- */}
+      {/* --- CONTENT SECTIONS (PROGRESSIVE LOADING) --- */}
       <div className="relative w-full overflow-hidden">
         <div className="absolute inset-0 z-0 performant-bg"></div>
         <main className="container mx-auto py-8 relative z-20 pb-8">
-          {rwandanContent.length === 0 ? (
-             <div className="text-center py-20 bg-gray-800 rounded-xl border border-gray-700 mx-4">
-                <h3 className="text-xl text-gray-300 font-semibold">No Content Yet</h3>
-                <p className="text-gray-500 mt-2">Check back later for new Rwandan movies.</p>
+          
+          {/* SHOW LOADING PLACEHOLDERS IF SECTIONS NOT READY */}
+          {!sectionsLoaded ? (
+             <div className="px-4 space-y-8">
+                <div>
+                   <div className="h-6 w-48 bg-gray-700 rounded mb-4 animate-pulse"></div>
+                   <div className="flex space-x-4 overflow-hidden">
+                      <CardPlaceholder />
+                      <CardPlaceholder />
+                      <CardPlaceholder />
+                   </div>
+                </div>
              </div>
           ) : (
-            <>
-              <Section
-                title="Trending in Rwanda"
-                items={trendingRwandan}
-                onCardClick={navigate}
-                onWatchLaterToggle={toggleWatchLater}
-                watchLaterIds={watchLaterIds}
-                isLoading={isContentLoading}
-              />
-              <Section
-                title="New Releases"
-                items={newReleases}
-                onCardClick={navigate}
-                onWatchLaterToggle={toggleWatchLater}
-                watchLaterIds={watchLaterIds}
-                isLoading={isContentLoading}
-              />
-              <Section
-                title="Top Rated Local"
-                items={topRated}
-                onCardClick={navigate}
-                onWatchLaterToggle={toggleWatchLater}
-                watchLaterIds={watchLaterIds}
-                isLoading={isContentLoading}
-              />
-            </>
+             // RENDER REAL CONTENT ONLY AFTER HERO IS DONE
+             rwandanContent.length === 0 ? (
+                <div className="text-center py-20 bg-gray-800 rounded-xl border border-gray-700 mx-4">
+                    <Film size={48} className="mx-auto text-gray-600 mb-4" />
+                    <h3 className="text-xl text-gray-300 font-semibold">No Content Yet</h3>
+                    <p className="text-gray-500 mt-2">Check back later for new Rwandan movies.</p>
+                </div>
+             ) : (
+                <>
+                <Section
+                    title="Trending in Rwanda"
+                    items={trendingRwandan}
+                    onCardClick={navigate}
+                    onWatchLaterToggle={toggleWatchLater}
+                    watchLaterIds={watchLaterIds}
+                    isLoading={isContentLoading}
+                />
+                <Section
+                    title="New Releases"
+                    items={newReleases}
+                    onCardClick={navigate}
+                    onWatchLaterToggle={toggleWatchLater}
+                    watchLaterIds={watchLaterIds}
+                    isLoading={isContentLoading}
+                />
+                <Section
+                    title="Top Rated Local"
+                    items={topRated}
+                    onCardClick={navigate}
+                    onWatchLaterToggle={toggleWatchLater}
+                    watchLaterIds={watchLaterIds}
+                    isLoading={isContentLoading}
+                />
+                </>
+             )
           )}
         </main>
         <footer className="container mx-auto relative z-20 w-full text-center pt-2 mt-2 border-t border-gray-700/30 text-xs text-gray-400 pb-24">
