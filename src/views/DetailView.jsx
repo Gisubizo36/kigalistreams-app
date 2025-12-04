@@ -35,15 +35,15 @@ const DetailView = ({
   const [currentPlaybackTime, setCurrentPlaybackTime] = useState(initialTime);
   const [message, setMessage] = useState("");
 
-  // FIX: DO NOT auto-load Rwandan movies. Let them start as NULL so thumbnail shows.
+  // Initial State: NO AUTOPLAY on page load. User sees the poster.
   const initialVideo = useMemo(() => {
-    // Only auto-load if it's strictly a trailer
     if (item && item.trailerLink) {
       return {
         link: item.trailerLink,
         title: `${item.title} Trailer`,
         isTrailer: true,
         subtitleUrl: null,
+        autoPlay: false, 
       };
     }
     return {
@@ -51,6 +51,7 @@ const DetailView = ({
       title: "No Video Selected",
       isTrailer: false,
       subtitleUrl: null,
+      autoPlay: false,
     };
   }, [item]);
 
@@ -58,20 +59,15 @@ const DetailView = ({
   const watchLaterIds = watchLater;
   const isWatchLater = watchLaterIds.includes(contentId);
 
+  // ... (Related Content, Seasons, Episodes logic remains the same) ...
   const relatedContent = useMemo(() => {
     if (!item) return [];
-    return content
-      .filter(
-        (i) => i.id !== contentId && i.genre.some((g) => item.genre.includes(g))
-      )
-      .slice(0, 5);
+    return content.filter((i) => i.id !== contentId && i.genre.some((g) => item.genre.includes(g))).slice(0, 5);
   }, [content, contentId, item]);
 
   const seasons = useMemo(() => {
     if (item?.type !== "TV Series" || !item?.episodes) return [];
-    const seasonSet = new Set(
-      item.episodes.map((ep) => Number(ep.seasonNumber) || 1)
-    );
+    const seasonSet = new Set(item.episodes.map((ep) => Number(ep.seasonNumber) || 1));
     return Array.from(seasonSet).sort((a, b) => a - b);
   }, [item?.type, item?.episodes]);
 
@@ -84,56 +80,41 @@ const DetailView = ({
 
   const episodesForSelectedSeason = useMemo(() => {
     if (!item?.episodes) return [];
-    return item.episodes
-      .filter((ep) => Number(ep.seasonNumber) === selectedSeason)
-      .sort(
-        (a, b) =>
-          (Number(a.episodeNumber) || 0) - (Number(b.episodeNumber) || 0)
-      );
+    return item.episodes.filter((ep) => Number(ep.seasonNumber) === selectedSeason).sort((a, b) => (Number(a.episodeNumber) || 0) - (Number(b.episodeNumber) || 0));
   }, [item?.episodes, selectedSeason]);
 
   useEffect(() => {
-    const ep = item?.episodes?.find(
-      (e) => Number(e.episodeNumber) === currentEpisode
-    );
+    const ep = item?.episodes?.find((e) => Number(e.episodeNumber) === currentEpisode);
     if (ep && Number(ep.seasonNumber) !== selectedSeason) {
       setSelectedSeason(Number(ep.seasonNumber));
     }
   }, [currentEpisode, item?.episodes, selectedSeason]);
 
-  if (!item)
-    return (
-      <div className="text-white p-8">
-        Content not found.{" "}
-        <button onClick={() => navigate("home")} className="bg-amber-600 p-2 rounded">
-          Go Home
-        </button>
-      </div>
-    );
+  if (!item) return <div className="text-white p-8">Content not found. <button onClick={() => navigate("home")} className="bg-amber-600 p-2 rounded">Go Home</button></div>;
 
   const playMovie = (epNumber) => {
     setMessage("");
     
     // --- RWANDAN MOVIE LOGIC ---
-    // If it's a Rwandan movie, we play it internally
     if (item.category === "Rwandan" && item.movieLink) {
+        // Set state to trigger VideoPlayer mount with autoPlay=true
         setCurrentVideo({
             link: item.movieLink,
             title: item.title,
             isTrailer: false,
             subtitleUrl: null,
             initialTime: 0,
+            autoPlay: true, // THIS MAKES IT START IMMEDIATELY
         });
+        window.scrollTo({ top: 0, behavior: "smooth" });
         return;
     }
     // ---------------------------
 
-    // --- INTERNATIONAL LOGIC (Ads + External) ---
+    // --- INTERNATIONAL LOGIC ---
     let externalLink = null;
     if (item.type === "TV Series" && item.episodes.length > 0) {
-      const ep = item.episodes.find(
-        (e) => Number(e.episodeNumber) === epNumber
-      );
+      const ep = item.episodes.find((e) => Number(e.episodeNumber) === epNumber);
       if (ep && ep.episodeLink) {
         externalLink = ep.episodeLink;
         setCurrentEpisode(epNumber);
@@ -146,16 +127,8 @@ const DetailView = ({
       setMessage("Error: Main movie link not found.");
     }
 
-    if (
-      externalLink &&
-      (externalLink.startsWith("http://") ||
-        externalLink.startsWith("https://"))
-    ) {
-      window.open(
-        "https://otieu.com/4/10173729",
-        "_blank",
-        "noopener,noreferrer"
-      );
+    if (externalLink && (externalLink.startsWith("http://") || externalLink.startsWith("https://"))) {
+      window.open("https://otieu.com/4/10173729", "_blank", "noopener,noreferrer");
       window.location.href = externalLink;
     } else {
       setMessage("Error: The provided link is not valid or was not found.");
@@ -171,8 +144,10 @@ const DetailView = ({
         isTrailer: true,
         subtitleUrl: null,
         initialTime: 0,
+        autoPlay: true, // Trailer autoplays when play button is clicked
       });
       setMessage("Now Playing: Trailer");
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
       setMessage("Error: Trailer link not found.");
     }
@@ -197,6 +172,7 @@ const DetailView = ({
 
         {/* --- VIDEO PLAYER AREA --- */}
         <div className="max-w-4xl mx-auto">
+            {/* The key ensures the player remounts if the link or autoplay setting changes */}
             {currentVideo.link ? (
             <VideoPlayer
                 key={currentVideo.link}
@@ -205,28 +181,17 @@ const DetailView = ({
                 isTrailer={currentVideo.isTrailer}
                 onProgressUpdate={handleProgressUpdate}
                 initialTime={currentVideo.initialTime}
-                subtitleUrl={
-                currentVideo.subtitleUrl ||
-                item.episodes?.find((e) => e.episodeNumber === currentEpisode)
-                    ?.subtitleLink
-                }
+                subtitleUrl={currentVideo.subtitleUrl || item.episodes?.find((e) => e.episodeNumber === currentEpisode)?.subtitleLink}
+                autoPlay={currentVideo.autoPlay} // Passes true when button is clicked
             />
             ) : (
             <div className="relative w-full aspect-video bg-gray-800 rounded-xl flex items-center justify-center text-gray-400 text-lg overflow-hidden group">
-                {/* THUMBNAIL */}
                 <img
-                src={
-                    item.backdropImage || 
-                    item.thumbnail ||
-                    `https://placehold.co/1280x720/1f2937/fff?text=${encodeURIComponent(
-                    item.title
-                    )}`
-                }
+                src={item.backdropImage || item.thumbnail || `https://placehold.co/1280x720/1f2937/fff?text=${encodeURIComponent(item.title)}`}
                 alt={item.title}
                 className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity"
                 />
 
-                {/* --- OVERLAY PLAY BUTTON FOR RWANDAN CONTENT --- */}
                 {item.category === "Rwandan" ? (
                     <button
                         onClick={() => playMovie(currentEpisode)}
@@ -237,7 +202,6 @@ const DetailView = ({
                         </div>
                     </button>
                 ) : (
-                    // OPTIONAL: SHOW PLAY TRAILER BUTTON FOR INTERNATIONAL IF NO TRAILER AUTOLOAD
                    item.trailerLink && (
                     <button
                         onClick={playTrailer}
@@ -253,29 +217,20 @@ const DetailView = ({
             )}
         </div>
         
-        {message && (
-          <p className="mt-4 text-center text-sm text-green-400">{message}</p>
-        )}
+        {message && <p className="mt-4 text-center text-sm text-green-400">{message}</p>}
 
         <div className="mt-8 flex flex-col lg:flex-row gap-8">
           <div className="lg:w-2/3">
             <div className="flex justify-between items-start mb-4">
-              <h1 className="text-3xl font-bold text-white mb-1">
-                {item.title}
-              </h1>
-              
+              <h1 className="text-3xl font-bold text-white mb-1">{item.title}</h1>
               <button
                 onClick={() => toggleWatchLater(contentId)}
                 className={`flex items-center p-3 rounded-full transition text-sm font-bold shadow-lg ${
-                  isWatchLater
-                    ? "bg-emerald-600 text-white shadow-emerald-500/50" 
-                    : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                  isWatchLater ? "bg-emerald-600 text-white shadow-emerald-500/50" : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                 }`}
               >
                 <Clock size={20} className="mr-1" />
-                <span className="hidden sm:inline">
-                  {isWatchLater ? "Watching Later" : "Watch Later"}
-                </span>
+                <span className="hidden sm:inline">{isWatchLater ? "Watching Later" : "Watch Later"}</span>
               </button>
             </div>
 
@@ -289,8 +244,7 @@ const DetailView = ({
 
             {item.translator && (
               <p className="text-lg text-emerald-400 font-semibold mb-2 flex items-center">
-                <BookOpen size={20} className="mr-2" /> Interpreted by:{" "}
-                {item.translator}
+                <BookOpen size={20} className="mr-2" /> Interpreted by: {item.translator}
               </p>
             )}
 
@@ -300,53 +254,29 @@ const DetailView = ({
                   onClick={() => playMovie(currentEpisode)}
                   className="flex items-center bg-amber-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg shadow-emerald-600/30"
                 >
-                  <Play size={20} className="mr-2" />
-                  Watch Movie
+                  <Play size={20} className="mr-2" /> Watch Movie
                 </button>
                 
                 {item.trailerLink && item.trailerLink !== currentVideo.link && (
-                  <button
-                    onClick={playTrailer}
-                    className="flex items-center border border-gray-600 text-gray-300 hover:bg-gray-700 font-semibold py-3 px-6 rounded-xl transition"
-                  >
-                    <Video size={20} className="mr-2" />
-                    Play Trailer
+                  <button onClick={playTrailer} className="flex items-center border border-gray-600 text-gray-300 hover:bg-gray-700 font-semibold py-3 px-6 rounded-xl transition">
+                    <Video size={20} className="mr-2" /> Play Trailer
                   </button>
                 )}
                 
                 {item.downloadLink && (
-                  <a
-                    href={item.downloadLink}
-                    download
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center border border-gray-600 text-gray-300 hover:bg-gray-700 font-semibold py-3 px-6 rounded-xl transition"
-                  >
-                    <Download size={20} className="mr-2" />
-                    Download
+                  <a href={item.downloadLink} download target="_blank" rel="noopener noreferrer" className="flex items-center border border-gray-600 text-gray-300 hover:bg-gray-700 font-semibold py-3 px-6 rounded-xl transition">
+                    <Download size={20} className="mr-2" /> Download
                   </a>
                 )}
               </div>
             ) : (
               <div className="my-6 space-y-4">
                 <div className="relative inline-block w-full sm:w-auto">
-                  <select
-                    value={selectedSeason}
-                    onChange={(e) => setSelectedSeason(Number(e.target.value))}
-                    className="appearance-none w-full sm:w-auto bg-gray-700 border border-gray-600 text-white font-semibold py-3 px-4 pr-8 rounded-lg focus:outline-none focus:border-emerald-500 cursor-pointer"
-                  >
-                    {seasons.map((season) => (
-                      <option key={season} value={season}>
-                        Season {season}
-                      </option>
-                    ))}
+                  <select value={selectedSeason} onChange={(e) => setSelectedSeason(Number(e.target.value))} className="appearance-none w-full sm:w-auto bg-gray-700 border border-gray-600 text-white font-semibold py-3 px-4 pr-8 rounded-lg focus:outline-none focus:border-emerald-500 cursor-pointer">
+                    {seasons.map((season) => <option key={season} value={season}>Season {season}</option>)}
                   </select>
-                  <ChevronDown
-                    size={20}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-                  />
+                  <ChevronDown size={20} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                 </div>
-
                 <h3 className="text-xl font-semibold text-white">Episodes</h3>
                 <div className="flex flex-wrap gap-3">
                   {episodesForSelectedSeason.length > 0 ? (
@@ -354,23 +284,14 @@ const DetailView = ({
                       <button
                         key={ep.episodeNumber}
                         onClick={() => playMovie(ep.episodeNumber)}
-                        className={`flex items-center bg-gray-800 border border-gray-700 hover:border-emerald-500 text-gray-300 hover:text-white font-medium py-2 px-4 rounded-lg transition ${
-                          currentEpisode === ep.episodeNumber
-                            ? "border-emerald-500 text-emerald-400"
-                            : ""
-                        }`}
+                        className={`flex items-center bg-gray-800 border border-gray-700 hover:border-emerald-500 text-gray-300 hover:text-white font-medium py-2 px-4 rounded-lg transition ${currentEpisode === ep.episodeNumber ? "border-emerald-500 text-emerald-400" : ""}`}
                         title={ep.episodeTitle}
                       >
-                        <Play size={16} className="mr-2 flex-shrink-0" />
-                        <span className="truncate">
-                          E{ep.episodeNumber}: {ep.episodeTitle}
-                        </span>
+                        <Play size={16} className="mr-2 flex-shrink-0" /> <span className="truncate">E{ep.episodeNumber}: {ep.episodeTitle}</span>
                       </button>
                     ))
                   ) : (
-                    <p className="text-gray-400">
-                      No episodes found for this season.
-                    </p>
+                    <p className="text-gray-400">No episodes found for this season.</p>
                   )}
                 </div>
               </div>
@@ -380,37 +301,19 @@ const DetailView = ({
 
             <div className="flex flex-wrap gap-2 mb-6">
               {item.genre.map((g) => (
-                <span
-                  key={g}
-                  className="text-xs font-medium bg-amber-600/30 text-emerald-300 py-1 px-3 rounded-full"
-                >
-                  {g}
-                </span>
+                <span key={g} className="text-xs font-medium bg-amber-600/30 text-emerald-300 py-1 px-3 rounded-full">{g}</span>
               ))}
             </div>
           </div>
           <div className="lg:w-1/3">
             <div className="bg-gray-800 p-4 rounded-xl shadow-lg">
-              <h3 className="text-xl font-bold text-white mb-4 flex items-center">
-                <Globe size={20} className="mr-2 text-amber-600" />
-                More Like This
-              </h3>
+              <h3 className="text-xl font-bold text-white mb-4 flex items-center"><Globe size={20} className="mr-2 text-amber-600" /> More Like This</h3>
               <div className="space-y-4">
                 {relatedContent.map((rc) => (
-                  <div
-                    key={rc.id}
-                    className="flex items-center space-x-3 cursor-pointer hover:bg-gray-700 p-2 rounded-lg transition"
-                    onClick={() => navigate("detail", rc.id)}
-                  >
-                    <img
-                      src={rc.thumbnail}
-                      alt={rc.title}
-                      className="w-12 h-16 object-cover rounded-md"
-                    />
+                  <div key={rc.id} className="flex items-center space-x-3 cursor-pointer hover:bg-gray-700 p-2 rounded-lg transition" onClick={() => navigate("detail", rc.id)}>
+                    <img src={rc.thumbnail} alt={rc.title} className="w-12 h-16 object-cover rounded-md" />
                     <div>
-                      <h4 className="text-white text-sm font-semibold truncate">
-                        {rc.title}
-                      </h4>
+                      <h4 className="text-white text-sm font-semibold truncate">{rc.title}</h4>
                       <p className="text-gray-400 text-xs">{rc.type}</p>
                     </div>
                   </div>

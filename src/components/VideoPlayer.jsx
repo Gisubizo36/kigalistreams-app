@@ -9,9 +9,10 @@ const VideoPlayer = ({
   onProgressUpdate,
   initialTime = 0,
   subtitleUrl,
+  autoPlay = false, // Checks if we should play immediately
 }) => {
   const videoRef = React.useRef(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(autoPlay); 
   const [currentTime, setCurrentTime] = useState(initialTime);
   const [duration, setDuration] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1.0);
@@ -20,15 +21,21 @@ const VideoPlayer = ({
   const youtubeEmbedUrl = getYouTubeEmbedUrl(url);
 
   if (youtubeEmbedUrl) {
+    // 1. Check if URL already has query params
+    const separator = youtubeEmbedUrl.includes("?") ? "&" : "?";
+    
+    // 2. Construct source with MANDATORY autoplay=1 if autoPlay is true
+    // allow="autoplay" is crucial in the iframe tag below
+    const iframeSrc = `${youtubeEmbedUrl}${separator}autoplay=${autoPlay ? 1 : 0}&rel=0&modestbranding=1&playsinline=1&start=${Math.floor(initialTime)}`;
+
     return (
       <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl">
         <iframe
-          // --- FIX: autoplay=0 PREVENTS AUTO-START ---
-          src={`${youtubeEmbedUrl}?autoplay=0`}
-          // -----------------------------------------
+          src={iframeSrc}
           title={title}
           frameBorder="0"
-          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          // CRITICAL: "autoplay" must be in this list
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
           className="w-full h-full"
         ></iframe>
@@ -36,9 +43,11 @@ const VideoPlayer = ({
     );
   }
 
+  // --- NATIVE VIDEO PLAYER LOGIC ---
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+    
     const setLoadedDuration = () => {
       setDuration(video.duration);
       video.currentTime = initialTime;
@@ -47,12 +56,17 @@ const VideoPlayer = ({
         const track = video.textTracks[0];
         track.mode = ccEnabled ? "showing" : "hidden";
       }
+      // NATIVE AUTOPLAY LOGIC
+      if (autoPlay) {
+        video.play().catch(e => console.warn("Autoplay blocked by browser:", e));
+        setIsPlaying(true);
+      }
     };
     video.addEventListener("loadedmetadata", setLoadedDuration);
     return () => {
       video.removeEventListener("loadedmetadata", setLoadedDuration);
     };
-  }, [url, initialTime, playbackRate, ccEnabled]);
+  }, [url, initialTime, playbackRate, ccEnabled, autoPlay]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -124,17 +138,10 @@ const VideoPlayer = ({
         )}
       </div>
 
-      {isTrailer && (
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-yellow-900/50 text-yellow-300 p-2 rounded-lg text-sm z-20">
-          Future Pre-roll Ad Slot (5s)
-        </div>
-      )}
-
       <video
         ref={videoRef}
         src={url}
         controls={false}
-        autoPlay
         className="w-full h-full object-cover transition duration-300 opacity-90 hover:opacity-100"
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
